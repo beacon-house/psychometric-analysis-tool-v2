@@ -30,27 +30,42 @@ export const Test: React.FC<TestPageProps> = ({
 
   // Load existing progress on mount
   useEffect(() => {
-    const studentData = storage.getStudentData();
-    if (!studentData) {
-      const newData = storage.initializeStudent();
-      storage.setStudentData(newData);
-    }
+    const initializeTestSession = async () => {
+      let studentData = storage.getStudentData();
+      if (!studentData) {
+        const newData = storage.initializeStudent();
+        storage.setStudentData(newData);
+        studentData = newData;
 
-    const progress = studentData?.testProgress[testName];
-    if (progress && !progress.completedAt) {
-      setResponses(progress.responses || {});
-      const lastAnswered = Object.keys(progress.responses || {}).length;
-      setCurrentQuestionIndex(lastAnswered);
-    } else if (!progress) {
-      // Initialize test progress
-      storage.updateTestProgress(testName, {
-        testName,
-        currentQuestion: 0,
-        totalQuestions: questions.length,
-        responses: {},
-        startedAt: new Date().toISOString(),
-      });
-    }
+        // Create student record in Supabase
+        try {
+          await supabase.from('students').insert({
+            id: newData.uuid,
+            overall_status: newData.overallStatus,
+          });
+        } catch (error) {
+          console.error('Error creating student in Supabase:', error);
+        }
+      }
+
+      const progress = studentData?.testProgress[testName];
+      if (progress && !progress.completedAt) {
+        setResponses(progress.responses || {});
+        const lastAnswered = Object.keys(progress.responses || {}).length;
+        setCurrentQuestionIndex(lastAnswered);
+      } else if (!progress) {
+        // Initialize test progress
+        storage.updateTestProgress(testName, {
+          testName,
+          currentQuestion: 0,
+          totalQuestions: questions.length,
+          responses: {},
+          startedAt: new Date().toISOString(),
+        });
+      }
+    };
+
+    initializeTestSession();
   }, [testName, questions.length]);
 
   const currentQuestion = questions[currentQuestionIndex];

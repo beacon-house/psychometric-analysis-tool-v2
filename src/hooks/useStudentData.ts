@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
+import { supabase } from '../lib/supabase';
 import type { StudentData, TestName } from '../types';
 
 export const useStudentData = () => {
@@ -10,14 +11,28 @@ export const useStudentData = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let data = storage.getStudentData();
+    const initializeStudent = async () => {
+      let data = storage.getStudentData();
 
-    if (!data) {
-      data = storage.initializeStudent();
-    }
+      if (!data) {
+        data = storage.initializeStudent();
 
-    setStudentData(data);
-    setIsLoading(false);
+        // Create student record in Supabase
+        try {
+          await supabase.from('students').insert({
+            id: data.uuid,
+            overall_status: data.overallStatus,
+          });
+        } catch (error) {
+          console.error('Error creating student in Supabase:', error);
+        }
+      }
+
+      setStudentData(data);
+      setIsLoading(false);
+    };
+
+    initializeStudent();
   }, []);
 
   const updateProgress = (testName: TestName, currentQuestion: number, totalQuestions: number) => {
