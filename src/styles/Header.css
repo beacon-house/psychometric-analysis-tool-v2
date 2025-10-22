@@ -1,20 +1,18 @@
-/* Header styling with logo display
- * Responsive: full logo on desktop, image only on mobile
- */
+/* Minimal header with subtle logo */
 
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--color-white);
-  border-bottom: 1px solid var(--color-slate-200);
-  box-shadow: var(--shadow-sm);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-slate-100);
 }
 
 .header-container {
-  max-width: 1280px;
+  max-width: 1140px;
   margin: 0 auto;
-  padding: var(--space-3) var(--space-4);
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,37 +21,27 @@
 .logo-container {
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .logo {
-  height: 48px;
+  height: 28px;
   width: auto;
   object-fit: contain;
-  transition: opacity var(--transition-fast);
-}
-
-.logo:hover {
   opacity: 0.9;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .header-container {
-    padding: var(--space-2) var(--space-3);
+    padding: 0.625rem 1rem;
   }
 
   .logo {
-    height: 40px;
+    height: 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .header-container {
-    padding: var(--space-2);
-  }
-
   .logo {
-    height: 36px;
+    height: 22px;
   }
 }

@@ -68,16 +68,16 @@
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Font sizes */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-  --text-5xl: 3rem;
-  --text-6xl: 3.75rem;
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.25rem;
+  --text-3xl: 1.5rem;
+  --text-4xl: 1.875rem;
+  --text-5xl: 2.25rem;
+  --text-6xl: 3rem;
 
   /* Line heights */
   --leading-tight: 1.2;
@@ -121,23 +121,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: var(--text-4xl);
-  margin-bottom: var(--space-4);
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-3);
+  font-weight: var(--font-semibold);
 }
 
 h2 {
-  font-size: var(--text-3xl);
-  margin-bottom: var(--space-3);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-semibold);
 }
 
 h3 {
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-semibold);
 }
 
 h4 {
-  font-size: var(--text-xl);
+  font-size: var(--text-base);
   margin-bottom: var(--space-2);
+  font-weight: var(--font-semibold);
 }
 
 p {
