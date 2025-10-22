@@ -8,6 +8,8 @@ import { Test16Personalities } from './pages/Test16Personalities';
 import { Results16Personalities } from './pages/Results16Personalities';
 import { TestHigh5 } from './pages/TestHigh5';
 import { ResultsHigh5 } from './pages/ResultsHigh5';
+import { TestBigFive } from './pages/TestBigFive';
+import { ResultsBigFive } from './pages/ResultsBigFive';
 
 const App: React.FC = () => {
   return (
@@ -18,6 +20,8 @@ const App: React.FC = () => {
         <Route path="/test/16personalities/results" element={<Results16Personalities />} />
         <Route path="/test/high5" element={<TestHigh5 />} />
         <Route path="/test/high5/results" element={<ResultsHigh5 />} />
+        <Route path="/test/bigfive" element={<TestBigFive />} />
+        <Route path="/test/bigfive/results" element={<ResultsBigFive />} />
       </Routes>
     </BrowserRouter>
   );
