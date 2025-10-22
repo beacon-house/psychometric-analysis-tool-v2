@@ -43,7 +43,9 @@ export const TestQuestion: React.FC<TestQuestionProps> = ({
       </div>
 
       <div className="question-content">
-        <h2 className="question-text">{questionText}</h2>
+        <div className="question-text-container">
+          <h2 className="question-text">{questionText}</h2>
+        </div>
 
         <div className="question-response-section">
           <LikertScale
