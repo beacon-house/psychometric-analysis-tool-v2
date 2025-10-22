@@ -1,0 +1,129 @@
+/* Test Question component styling */
+
+.test-question-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.question-header {
+  margin-bottom: 32px;
+}
+
+.question-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.question-number {
+  color: #333;
+  font-weight: 600;
+}
+
+.question-divider {
+  color: #999;
+}
+
+.question-total {
+  color: #666;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background: #e5e5e5;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+  transition: width 0.3s ease;
+}
+
+.question-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.question-text {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #1a1a1a;
+  text-align: center;
+  margin: 0;
+  padding: 0 16px;
+  max-width: 700px;
+}
+
+.question-response-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.previous-button {
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.previous-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #333;
+}
+
+.previous-button:active {
+  background: #f3f4f6;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .test-question-container {
+    padding: 16px 12px;
+  }
+
+  .question-header {
+    margin-bottom: 24px;
+  }
+
+  .question-content {
+    gap: 24px;
+  }
+
+  .question-text {
+    font-size: 18px;
+    padding: 0 8px;
+  }
+
+  .previous-button {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .question-text {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,178 @@
+/* Universal Likert Scale styling for all tests */
+
+.likert-scale {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.likert-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 8px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  min-height: 80px;
+}
+
+.likert-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.likert-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.likert-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.likert-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.likert-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Color coding for different values */
+.likert-1 {
+  background: #ffe5e5;
+  color: #c41e3a;
+}
+
+.likert-1:hover:not(:disabled) {
+  background: #ffd0d0;
+  border-color: #c41e3a;
+}
+
+.likert-1.selected {
+  background: #c41e3a;
+  color: white;
+  border-color: #a01830;
+}
+
+.likert-2 {
+  background: #fff0e5;
+  color: #d97706;
+}
+
+.likert-2:hover:not(:disabled) {
+  background: #ffe5d0;
+  border-color: #d97706;
+}
+
+.likert-2.selected {
+  background: #d97706;
+  color: white;
+  border-color: #b35f05;
+}
+
+.likert-3 {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.likert-3:hover:not(:disabled) {
+  background: #e5e5e5;
+  border-color: #999;
+}
+
+.likert-3.selected {
+  background: #666;
+  color: white;
+  border-color: #555;
+}
+
+.likert-4 {
+  background: #e5f5e5;
+  color: #059669;
+}
+
+.likert-4:hover:not(:disabled) {
+  background: #d0ead0;
+  border-color: #059669;
+}
+
+.likert-4.selected {
+  background: #059669;
+  color: white;
+  border-color: #047857;
+}
+
+.likert-5 {
+  background: #d0f0d0;
+  color: #047857;
+}
+
+.likert-5:hover:not(:disabled) {
+  background: #b8e5b8;
+  border-color: #047857;
+}
+
+.likert-5.selected {
+  background: #047857;
+  color: white;
+  border-color: #036145;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .likert-scale {
+    gap: 6px;
+    padding: 0 12px;
+  }
+
+  .likert-button {
+    padding: 12px 4px;
+    min-height: 70px;
+    border-radius: 8px;
+  }
+
+  .likert-value {
+    font-size: 18px;
+  }
+
+  .likert-label {
+    font-size: 9px;
+  }
+}
+
+/* Very small mobile screens */
+@media (max-width: 380px) {
+  .likert-scale {
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  .likert-button {
+    padding: 10px 2px;
+    min-height: 65px;
+  }
+
+  .likert-value {
+    font-size: 16px;
+  }
+
+  .likert-label {
+    font-size: 8px;
+  }
+}

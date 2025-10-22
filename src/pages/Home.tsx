@@ -2,6 +2,7 @@
 // Shows all available tests with progress tracking and contact modal
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { TestCard } from '../components/TestCard';
 import { ProgressIndicator } from '../components/ProgressIndicator';
@@ -13,6 +14,7 @@ import type { TestInfo, TestName, ContactFormData, TestStatus } from '../types';
 import '../styles/Home.css';
 
 export const Home: React.FC = () => {
+  const navigate = useNavigate();
   const {
     studentData,
     isLoading,
@@ -53,9 +55,11 @@ export const Home: React.FC = () => {
   };
 
   const handleStartTest = (testName: TestName) => {
-    console.log(`Starting test: ${testName}`);
-    // Navigation to test page will be implemented in next phase
-    alert(`Test interface for ${testName} will be implemented in the next phase. For now, you're viewing the landing page.`);
+    if (testName === '16Personalities') {
+      navigate('/test/16personalities');
+    } else {
+      alert(`Test interface for ${testName} will be implemented soon.`);
+    }
   };
 
   const handleContactSubmit = async (formData: ContactFormData) => {
