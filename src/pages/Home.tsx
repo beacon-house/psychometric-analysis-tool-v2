@@ -57,6 +57,8 @@ export const Home: React.FC = () => {
   const handleStartTest = (testName: TestName) => {
     if (testName === '16Personalities') {
       navigate('/test/16personalities');
+    } else if (testName === 'HIGH5') {
+      navigate('/test/high5');
     } else {
       alert(`Test interface for ${testName} will be implemented soon.`);
     }
