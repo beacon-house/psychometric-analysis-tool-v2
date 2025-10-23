@@ -57,7 +57,7 @@ export const Test: React.FC<TestPageProps> = ({
         const lastAnswered = Object.keys(progress.responses || {}).length;
         setCurrentQuestionIndex(lastAnswered);
       } else if (!progress) {
-        // Initialize test progress
+        // Initialize test progress in localStorage only
         storage.updateTestProgress(testName, {
           testName,
           currentQuestion: 0,
@@ -65,20 +65,6 @@ export const Test: React.FC<TestPageProps> = ({
           responses: {},
           startedAt: new Date().toISOString(),
         });
-
-        // Create test_results record with 'in_progress' status
-        try {
-          await supabase.from('test_results').upsert({
-            student_id: studentData.uuid,
-            test_name: testName,
-            test_status: 'in_progress',
-            questions_answered: 0,
-            result_data: null,
-            last_activity_at: new Date().toISOString(),
-          });
-        } catch (error) {
-          console.error('[Test] Error creating test_results record:', error);
-        }
       }
     };
 
@@ -99,7 +85,7 @@ export const Test: React.FC<TestPageProps> = ({
 
     setResponses(updatedResponses);
 
-    // Save to localStorage
+    // Save to localStorage only during test-taking
     storage.saveResponse(testName, questionKey, value);
     storage.updateTestProgress(testName, {
       currentQuestion: currentQuestionIndex + 1,
@@ -108,31 +94,6 @@ export const Test: React.FC<TestPageProps> = ({
       testName,
       startedAt: storage.getStudentData()?.testProgress[testName]?.startedAt || new Date().toISOString(),
     });
-
-    // Save to Supabase (background, don't block)
-    const studentData = storage.getStudentData();
-    if (studentData) {
-      console.log(`[${testName}] Saving response to Supabase:`, {
-        student_id: studentData.uuid,
-        test_name: testName,
-        question: questionKey,
-        total_responses: Object.keys(updatedResponses).length,
-      });
-      supabase
-        .from('test_responses')
-        .upsert({
-          student_id: studentData.uuid,
-          test_name: testName,
-          responses: updatedResponses,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.error(`[${testName}] Error saving to Supabase:`, error);
-          } else {
-            console.log(`[${testName}] Successfully saved response to Supabase`);
-          }
-        });
-    }
 
     // Check if this is the last question
     if (currentQuestionIndex === questions.length - 1) {
@@ -156,33 +117,26 @@ export const Test: React.FC<TestPageProps> = ({
       if (!studentData) throw new Error('Student data not found');
 
       // Evaluate test results
-      console.log(`[${testName}] Evaluating test with ${Object.keys(finalResponses).length} responses`);
       const evaluation = evaluateFunction(finalResponses);
-      console.log(`[${testName}] Evaluation complete:`, evaluation);
 
       // Mark test as completed in localStorage
       storage.completeTest(testName);
-      console.log(`[${testName}] Marked as completed in localStorage`);
 
-      // Save results to Supabase and update status to 'completed'
-      console.log(`[${testName}] Saving results to Supabase test_results table`);
+      // Save results to Supabase - single atomic operation
       const { error: resultsError } = await supabase.from('test_results').upsert({
         student_id: studentData.uuid,
         test_name: testName,
         test_status: 'completed',
         result_data: evaluation,
-        questions_answered: Object.keys(finalResponses).length,
         completed_at: new Date().toISOString(),
-        last_activity_at: new Date().toISOString(),
       });
+
       if (resultsError) {
         console.error(`[${testName}] Error saving results:`, resultsError);
-      } else {
-        console.log(`[${testName}] Successfully saved results to test_results with completed status`);
+        throw new Error('Failed to save test results to database');
       }
 
-      // Update test_responses with final data
-      console.log(`[${testName}] Updating test_responses with final data`);
+      // Save test responses to database
       const { error: responsesError } = await supabase
         .from('test_responses')
         .upsert({
@@ -191,31 +145,52 @@ export const Test: React.FC<TestPageProps> = ({
           responses: finalResponses,
           completed_at: new Date().toISOString(),
         });
+
       if (responsesError) {
-        console.error(`[${testName}] Error updating test_responses:`, responsesError);
-      } else {
-        console.log(`[${testName}] Successfully updated test_responses`);
+        console.error(`[${testName}] Error saving responses:`, responsesError);
+        throw new Error('Failed to save test responses to database');
       }
 
       // Check if this is RIASEC - if so, always show contact modal
       const isRIASEC = testName === 'RIASEC';
 
       if (isRIASEC) {
-        // For RIASEC, always show the contact modal after completion
-        // Do not show results until after contact details are submitted and LLM report is generated
-        console.log(`[${testName}] Test completed, showing contact modal for career report`);
         setShowContactModal(true);
       } else {
         // For other tests, navigate directly to results page
         const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
-        console.log(`[${testName}] Navigating to results page:`, resultsRoute);
         navigate(resultsRoute, {
           state: { evaluation },
         });
       }
     } catch (error) {
       console.error('Error completing test:', error);
-      alert('There was an error saving your results. Please try again.');
+      setIsSubmitting(false);
+      const retry = window.confirm(
+        'There was an error saving your results to the database. Would you like to retry? (Click Cancel to continue anyway)'
+      );
+      if (retry) {
+        // Retry the completion
+        const studentData = storage.getStudentData();
+        if (studentData) {
+          const responses = studentData.testProgress[testName]?.responses;
+          if (responses) {
+            return handleTestCompletion(responses);
+          }
+        }
+      } else {
+        // User chose to continue without saving to database
+        const evaluation = evaluateFunction(finalResponses);
+        if (testName === 'RIASEC') {
+          setShowContactModal(true);
+        } else {
+          const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
+          navigate(resultsRoute, {
+            state: { evaluation },
+          });
+        }
+      }
+      return;
     } finally {
       setIsSubmitting(false);
     }

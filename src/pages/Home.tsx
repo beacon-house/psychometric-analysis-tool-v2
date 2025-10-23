@@ -55,17 +55,109 @@ export const Home: React.FC = () => {
     }));
   };
 
-  const handleResetProgress = () => {
-    if (window.confirm('Are you sure you want to reset all test progress? This action cannot be undone.')) {
+  const handleResetProgress = async () => {
+    if (!window.confirm('Are you sure you want to reset all test progress? This action cannot be undone.')) {
+      return;
+    }
+
+    const studentData = storage.getStudentData();
+    if (!studentData) {
       storage.clearData();
       window.location.reload();
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Delete all database records for this student
+      const { error: responsesError } = await supabase
+        .from('test_responses')
+        .delete()
+        .eq('student_id', studentData.uuid);
+
+      if (responsesError) {
+        console.error('Error deleting test_responses:', responsesError);
+        throw responsesError;
+      }
+
+      const { error: resultsError } = await supabase
+        .from('test_results')
+        .delete()
+        .eq('student_id', studentData.uuid);
+
+      if (resultsError) {
+        console.error('Error deleting test_results:', resultsError);
+        throw resultsError;
+      }
+
+      const { error: studentError } = await supabase
+        .from('students')
+        .delete()
+        .eq('id', studentData.uuid);
+
+      if (studentError) {
+        console.error('Error deleting student:', studentError);
+        throw studentError;
+      }
+
+      // Clear localStorage after successful database cleanup
+      storage.clearData();
+      window.location.reload();
+    } catch (error) {
+      console.error('Error resetting progress:', error);
+      alert('There was an error resetting your progress. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleResetIndividualTest = (testName: TestName) => {
-    if (window.confirm(`Are you sure you want to reset progress for ${testName}? This action cannot be undone.`)) {
+  const handleResetIndividualTest = async (testName: TestName) => {
+    if (!window.confirm(`Are you sure you want to reset progress for ${testName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    const studentData = storage.getStudentData();
+    if (!studentData) {
       storage.resetTest(testName);
       window.location.reload();
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Delete database records for this specific test
+      const { error: responsesError } = await supabase
+        .from('test_responses')
+        .delete()
+        .eq('student_id', studentData.uuid)
+        .eq('test_name', testName);
+
+      if (responsesError) {
+        console.error(`Error deleting test_responses for ${testName}:`, responsesError);
+        throw responsesError;
+      }
+
+      const { error: resultsError } = await supabase
+        .from('test_results')
+        .delete()
+        .eq('student_id', studentData.uuid)
+        .eq('test_name', testName);
+
+      if (resultsError) {
+        console.error(`Error deleting test_results for ${testName}:`, resultsError);
+        throw resultsError;
+      }
+
+      // Clear localStorage test progress after successful database cleanup
+      storage.resetTest(testName);
+      window.location.reload();
+    } catch (error) {
+      console.error(`Error resetting ${testName}:`, error);
+      alert(`There was an error resetting ${testName}. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

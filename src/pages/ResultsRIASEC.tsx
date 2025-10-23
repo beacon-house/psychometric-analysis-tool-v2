@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
+import { evaluateRIASEC } from '../lib/tests/riasec-evaluator';
 import type { RIASECEvaluationResult } from '../lib/tests/riasec-evaluator';
 import '../styles/ResultsRIASEC.css';
 
@@ -30,6 +31,16 @@ export const ResultsRIASEC: React.FC = () => {
         return;
       }
 
+      // First, try to get results from localStorage
+      const testProgress = studentData.testProgress['RIASEC'];
+      if (testProgress && testProgress.completedAt && testProgress.responses) {
+        const evaluation = evaluateRIASEC(testProgress.responses);
+        setEvaluation(evaluation);
+        setIsLoading(false);
+        return;
+      }
+
+      // If not in localStorage, fall back to database
       const { data, error } = await supabase
         .from('test_results')
         .select('result_data')

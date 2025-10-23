@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
+import { evaluateHigh5 } from '../lib/tests/high5-evaluator';
 import type { EvaluationResultHigh5 } from '../lib/tests/high5-evaluator';
 import '../styles/ResultsHigh5.css';
 
@@ -31,6 +32,16 @@ export const ResultsHigh5: React.FC = () => {
         return;
       }
 
+      // First, try to get results from localStorage
+      const testProgress = studentData.testProgress['HIGH5'];
+      if (testProgress && testProgress.completedAt && testProgress.responses) {
+        const evaluation = evaluateHigh5(testProgress.responses);
+        setEvaluation(evaluation);
+        setIsLoading(false);
+        return;
+      }
+
+      // If not in localStorage, fall back to database
       const { data, error } = await supabase
         .from('test_results')
         .select('result_data')
