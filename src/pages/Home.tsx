@@ -71,16 +71,6 @@ export const Home: React.FC = () => {
 
     try {
       // Delete all database records for this student
-      const { error: responsesError } = await supabase
-        .from('test_responses')
-        .delete()
-        .eq('student_id', studentData.uuid);
-
-      if (responsesError) {
-        console.error('Error deleting test_responses:', responsesError);
-        throw responsesError;
-      }
-
       const { error: resultsError } = await supabase
         .from('test_results')
         .delete()
@@ -128,17 +118,6 @@ export const Home: React.FC = () => {
 
     try {
       // Delete database records for this specific test
-      const { error: responsesError } = await supabase
-        .from('test_responses')
-        .delete()
-        .eq('student_id', studentData.uuid)
-        .eq('test_name', testName);
-
-      if (responsesError) {
-        console.error(`Error deleting test_responses for ${testName}:`, responsesError);
-        throw responsesError;
-      }
-
       const { error: resultsError } = await supabase
         .from('test_results')
         .delete()
@@ -197,19 +176,6 @@ export const Home: React.FC = () => {
         });
 
       if (studentError) throw studentError;
-
-      // Save test responses to database
-      for (const testName of TEST_ORDER) {
-        const progress = studentData.testProgress[testName];
-        if (progress && progress.completedAt) {
-          await supabase.from('test_responses').upsert({
-            student_id: studentData.uuid,
-            test_name: testName,
-            responses: progress.responses,
-            completed_at: progress.completedAt,
-          });
-        }
-      }
 
       // Trigger webhook for Make.com
       const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;

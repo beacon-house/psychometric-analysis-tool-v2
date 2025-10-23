@@ -57,7 +57,7 @@ export const Test: React.FC<TestPageProps> = ({
         const lastAnswered = Object.keys(progress.responses || {}).length;
         setCurrentQuestionIndex(lastAnswered);
       } else if (!progress) {
-        // Initialize test progress in localStorage only
+        // Initialize test progress in localStorage
         storage.updateTestProgress(testName, {
           testName,
           currentQuestion: 0,
@@ -65,6 +65,19 @@ export const Test: React.FC<TestPageProps> = ({
           responses: {},
           startedAt: new Date().toISOString(),
         });
+
+        // Create test_results record with in_progress status (database write only on test start)
+        try {
+          await supabase.from('test_results').upsert({
+            student_id: studentData.uuid,
+            test_name: testName,
+            test_status: 'in_progress',
+            result_data: null,
+            completed_at: null,
+          });
+        } catch (error) {
+          console.error('Error creating test_results record:', error);
+        }
       }
     };
 
@@ -122,7 +135,7 @@ export const Test: React.FC<TestPageProps> = ({
       // Mark test as completed in localStorage
       storage.completeTest(testName);
 
-      // Save results to Supabase - single atomic operation
+      // Save final results to Supabase - single atomic operation
       const { error: resultsError } = await supabase.from('test_results').upsert({
         student_id: studentData.uuid,
         test_name: testName,
@@ -134,21 +147,6 @@ export const Test: React.FC<TestPageProps> = ({
       if (resultsError) {
         console.error(`[${testName}] Error saving results:`, resultsError);
         throw new Error('Failed to save test results to database');
-      }
-
-      // Save test responses to database
-      const { error: responsesError } = await supabase
-        .from('test_responses')
-        .upsert({
-          student_id: studentData.uuid,
-          test_name: testName,
-          responses: finalResponses,
-          completed_at: new Date().toISOString(),
-        });
-
-      if (responsesError) {
-        console.error(`[${testName}] Error saving responses:`, responsesError);
-        throw new Error('Failed to save test responses to database');
       }
 
       // Check if this is RIASEC - if so, always show contact modal
@@ -227,19 +225,6 @@ export const Test: React.FC<TestPageProps> = ({
         });
 
       if (studentError) throw studentError;
-
-      // Save all test responses to database
-      for (const testName of TEST_ORDER) {
-        const progress = studentData.testProgress[testName];
-        if (progress && progress.completedAt) {
-          await supabase.from('test_responses').upsert({
-            student_id: studentData.uuid,
-            test_name: testName,
-            responses: progress.responses,
-            completed_at: progress.completedAt,
-          });
-        }
-      }
 
       // Trigger webhook for Make.com to generate LLM career report
       const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
