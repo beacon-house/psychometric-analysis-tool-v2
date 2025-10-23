@@ -4,9 +4,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TestQuestion } from '../components/TestQuestion';
+import { ContactModal } from '../components/ContactModal';
 import { storage } from '../lib/storage';
 import { supabase } from '../lib/supabase';
-import type { TestName } from '../types';
+import { TEST_ORDER } from '../lib/tests';
+import type { TestName, ContactFormData } from '../types';
 import '../styles/Test.css';
 
 interface TestPageProps {
@@ -27,6 +29,7 @@ export const Test: React.FC<TestPageProps> = ({
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   // Load existing progress on mount
   useEffect(() => {
@@ -179,12 +182,25 @@ export const Test: React.FC<TestPageProps> = ({
         console.log(`[${testName}] Successfully updated test_responses`);
       }
 
-      // Navigate to results page
-      const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
-      console.log(`[${testName}] Navigating to results page:`, resultsRoute);
-      navigate(resultsRoute, {
-        state: { evaluation },
+      // Check if this is RIASEC and all tests are completed
+      const isRIASEC = testName === 'RIASEC';
+      const allTestsCompleted = studentData && TEST_ORDER.every(test => {
+        const progress = studentData.testProgress[test];
+        return progress && progress.completedAt;
       });
+
+      // If RIASEC and all tests completed, show contact modal if not already submitted
+      if (isRIASEC && allTestsCompleted && !studentData?.parentEmail) {
+        console.log(`[${testName}] All tests completed, showing contact modal`);
+        setShowContactModal(true);
+      } else {
+        // Navigate to results page
+        const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
+        console.log(`[${testName}] Navigating to results page:`, resultsRoute);
+        navigate(resultsRoute, {
+          state: { evaluation },
+        });
+      }
     } catch (error) {
       console.error('Error completing test:', error);
       alert('There was an error saving your results. Please try again.');
@@ -199,6 +215,71 @@ export const Test: React.FC<TestPageProps> = ({
 
   const confirmExit = () => {
     navigate('/');
+  };
+
+  const handleContactSubmit = async (formData: ContactFormData) => {
+    const studentData = storage.getStudentData();
+    if (!studentData) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Update local storage
+      storage.updateContactInfo(formData);
+
+      // Save to Supabase
+      const { error: studentError } = await supabase
+        .from('students')
+        .upsert({
+          id: studentData.uuid,
+          student_name: formData.studentName,
+          parent_email: formData.parentEmail,
+          parent_whatsapp: formData.parentWhatsapp,
+          overall_status: 'reports_generated',
+          submission_timestamp: new Date().toISOString(),
+        });
+
+      if (studentError) throw studentError;
+
+      // Save all test responses to database
+      for (const testName of TEST_ORDER) {
+        const progress = studentData.testProgress[testName];
+        if (progress && progress.completedAt) {
+          await supabase.from('test_responses').upsert({
+            student_id: studentData.uuid,
+            test_name: testName,
+            test_status: 'completed',
+            responses: progress.responses,
+            completed_at: progress.completedAt,
+          });
+        }
+      }
+
+      // Trigger webhook for Make.com
+      const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            studentId: studentData.uuid,
+            studentName: formData.studentName,
+            parentEmail: formData.parentEmail,
+            parentWhatsapp: formData.parentWhatsapp,
+            completedTests: TEST_ORDER,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+      }
+
+      // Navigate to next steps page
+      navigate('/next-steps');
+    } catch (error) {
+      console.error('Error submitting contact information:', error);
+      alert('There was an error submitting your information. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitting) {
@@ -255,6 +336,13 @@ export const Test: React.FC<TestPageProps> = ({
           </div>
         </div>
       )}
+
+      <ContactModal
+        isOpen={showContactModal && !isSubmitting}
+        onSubmit={handleContactSubmit}
+        isDismissable={false}
+        isCareerReport={true}
+      />
     </div>
   );
 };

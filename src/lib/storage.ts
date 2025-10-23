@@ -122,4 +122,13 @@ export const storage = {
   clearData(): void {
     localStorage.removeItem(STORAGE_KEY);
   },
+
+  // Reset individual test progress (for testing)
+  resetTest(testName: TestName): void {
+    const data = this.getStudentData();
+    if (!data) return;
+
+    data.testProgress[testName] = undefined;
+    this.setStudentData(data);
+  },
 };

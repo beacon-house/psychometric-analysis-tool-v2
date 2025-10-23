@@ -62,6 +62,13 @@ export const Home: React.FC = () => {
     }
   };
 
+  const handleResetIndividualTest = (testName: TestName) => {
+    if (window.confirm(`Are you sure you want to reset progress for ${testName}? This action cannot be undone.`)) {
+      storage.resetTest(testName);
+      window.location.reload();
+    }
+  };
+
   const handleStartTest = (testName: TestName) => {
     if (testName === '16Personalities') {
       navigate('/test/16personalities');
@@ -169,22 +176,23 @@ export const Home: React.FC = () => {
 
         <ProgressIndicator completed={completedCount} total={4} />
 
-        <div style={{ textAlign: 'center', margin: '20px 0' }}>
-          <button
-            onClick={handleResetProgress}
-            style={{
-              padding: '8px 16px',
-              fontSize: '14px',
-              backgroundColor: '#ef4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500',
-            }}
-          >
-            Reset All Progress (Temporary)
-          </button>
+        <div className="ux-testing-section">
+          <p className="ux-testing-label">UX Testing Tools (Temporary - Will be removed before launch)</p>
+          <div className="ux-testing-buttons">
+            <button onClick={handleResetProgress} className="reset-button reset-all">
+              Reset All
+            </button>
+            {TEST_ORDER.map(testName => (
+              <button
+                key={testName}
+                onClick={() => handleResetIndividualTest(testName)}
+                className="reset-button reset-individual"
+                disabled={!studentData?.testProgress[testName]}
+              >
+                Reset {testName}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="tests-grid">

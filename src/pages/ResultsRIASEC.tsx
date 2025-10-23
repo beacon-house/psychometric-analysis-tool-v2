@@ -5,10 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
-import { ContactModal } from '../components/ContactModal';
 import type { RIASECEvaluationResult } from '../lib/tests/riasec-evaluator';
-import type { ContactFormData } from '../types';
-import { TEST_ORDER } from '../lib/tests';
 import '../styles/ResultsRIASEC.css';
 
 export const ResultsRIASEC: React.FC = () => {
@@ -18,21 +15,10 @@ export const ResultsRIASEC: React.FC = () => {
     location.state?.evaluation || null
   );
   const [isLoading, setIsLoading] = useState(!location.state?.evaluation);
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!evaluation) {
       loadResults();
-    } else {
-      // Check if we should show contact modal
-      const studentData = storage.getStudentData();
-      if (studentData && !studentData.parentEmail) {
-        // Small delay to let user see results first
-        setTimeout(() => {
-          setShowContactModal(true);
-        }, 1500);
-      }
     }
   }, [evaluation]);
 
@@ -55,13 +41,6 @@ export const ResultsRIASEC: React.FC = () => {
 
       if (data) {
         setEvaluation(data.result_data as RIASECEvaluationResult);
-
-        // Check if we should show contact modal
-        if (!studentData.parentEmail) {
-          setTimeout(() => {
-            setShowContactModal(true);
-          }, 1500);
-        }
       } else {
         navigate('/');
       }
@@ -71,71 +50,6 @@ export const ResultsRIASEC: React.FC = () => {
       navigate('/');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleContactSubmit = async (formData: ContactFormData) => {
-    const studentData = storage.getStudentData();
-    if (!studentData) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // Update local storage
-      storage.updateContactInfo(formData);
-
-      // Save to Supabase
-      const { error: studentError } = await supabase
-        .from('students')
-        .upsert({
-          id: studentData.uuid,
-          student_name: formData.studentName,
-          parent_email: formData.parentEmail,
-          parent_whatsapp: formData.parentWhatsapp,
-          overall_status: 'reports_generated',
-          submission_timestamp: new Date().toISOString(),
-        });
-
-      if (studentError) throw studentError;
-
-      // Save all test responses to database
-      for (const testName of TEST_ORDER) {
-        const progress = studentData.testProgress[testName];
-        if (progress && progress.completedAt) {
-          await supabase.from('test_responses').upsert({
-            student_id: studentData.uuid,
-            test_name: testName,
-            test_status: 'completed',
-            responses: progress.responses,
-            completed_at: progress.completedAt,
-          });
-        }
-      }
-
-      // Trigger webhook for Make.com
-      const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            studentId: studentData.uuid,
-            studentName: formData.studentName,
-            parentEmail: formData.parentEmail,
-            parentWhatsapp: formData.parentWhatsapp,
-            completedTests: TEST_ORDER,
-            timestamp: new Date().toISOString(),
-          }),
-        });
-      }
-
-      // Navigate to post-submission screen
-      navigate('/next-steps');
-    } catch (error) {
-      console.error('Error submitting contact information:', error);
-      alert('There was an error submitting your information. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -296,13 +210,6 @@ export const ResultsRIASEC: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <ContactModal
-        isOpen={showContactModal && !isSubmitting}
-        onSubmit={handleContactSubmit}
-        isDismissable={false}
-        isCareerReport={true}
-      />
     </div>
   );
 };
