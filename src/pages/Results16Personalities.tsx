@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Header } from '../components/Header';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
 import { evaluate16Personalities } from '../lib/tests/16personalities-evaluator';
@@ -72,6 +73,7 @@ export const Results16Personalities: React.FC = () => {
   if (isLoading) {
     return (
       <div className="results-page">
+        <Header />
         <div className="results-loading">
           <div className="loading-spinner"></div>
           <p>Loading your results...</p>
@@ -88,6 +90,7 @@ export const Results16Personalities: React.FC = () => {
 
   return (
     <div className="results-page">
+      <Header />
       <div className="results-container">
         <div className="results-header">
           <h1 className="results-title">Your Personality Type</h1>

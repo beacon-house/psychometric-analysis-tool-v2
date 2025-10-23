@@ -1,14 +1,14 @@
-/* 16 Personalities Results page styling */
+/* 16 Personalities Results - Sleek, compact design matching dashboard aesthetic */
 
 .results-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  padding: 32px 16px;
+  background: #FAFBFC;
 }
 
 .results-container {
-  max-width: 800px;
+  max-width: 1140px;
   margin: 0 auto;
+  padding: 1.5rem 1.5rem 3rem;
 }
 
 .results-loading {
@@ -16,43 +16,65 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
-  gap: 16px;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--color-slate-200);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.results-loading p {
+  font-size: 0.875rem;
+  color: var(--color-slate-600);
+  margin: 0;
 }
 
 /* Header section */
 .results-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
 }
 
 .results-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 24px 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-slate-900);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.01em;
 }
 
 .personality-type-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  padding: 16px 32px;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .personality-code {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: white;
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem;
 }
 
 .personality-description {
-  font-size: 16px;
-  color: #4b5563;
-  line-height: 1.6;
+  font-size: 0.8125rem;
+  color: var(--color-slate-600);
+  line-height: 1.5;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -60,29 +82,31 @@
 /* Dimension scores section */
 .dimension-scores-section {
   background: white;
-  border-radius: 16px;
-  padding: 32px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E7EB;
 }
 
 .section-title {
-  font-size: 20px;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #1a1a1a;
-  margin: 0 0 24px 0;
+  color: var(--color-slate-900);
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.01em;
 }
 
 .dimension-list {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 1rem;
 }
 
 .dimension-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .dimension-header {
@@ -92,15 +116,15 @@
 }
 
 .dimension-name {
-  font-size: 15px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-slate-700);
 }
 
 .dimension-value {
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #3b82f6;
+  color: var(--color-primary);
 }
 
 .dimension-bar-container {
@@ -109,24 +133,24 @@
 
 .dimension-bar-track {
   position: relative;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 3px;
   overflow: visible;
 }
 
 .dimension-bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.6s ease;
 }
 
 .dimension-bar-fill.dominant {
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  background: var(--color-primary);
 }
 
 .dimension-bar-fill.recessive {
-  background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+  background: var(--color-secondary);
 }
 
 .dimension-bar-midpoint {
@@ -134,9 +158,9 @@
   left: 50%;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: #9ca3af;
-  transform: translateX(-1px);
+  width: 1px;
+  background: var(--color-slate-400);
+  transform: translateX(-0.5px);
 }
 
 .dimension-clarity {
@@ -146,94 +170,95 @@
 
 .clarity-badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
   font-weight: 500;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: #F1F5F9;
+  color: var(--color-slate-600);
 }
 
 .clarity-badge.slight {
-  background: #fef3c7;
-  color: #92400e;
+  background: #FEF3C7;
+  color: #92400E;
 }
 
 .clarity-badge.moderate {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #DBEAFE;
+  color: #1E40AF;
 }
 
 .clarity-badge.clear {
-  background: #d1fae5;
-  color: #065f46;
+  background: #D1FAE5;
+  color: #065F46;
 }
 
 .clarity-badge.very {
-  background: #dcfce7;
-  color: #14532d;
+  background: #DCFCE7;
+  color: #14532D;
 }
 
 /* Detailed results section */
 .detailed-results-section {
   background: white;
-  border-radius: 16px;
-  padding: 24px 32px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E7EB;
 }
 
 .toggle-details-button {
   width: 100%;
-  padding: 12px 16px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 0.625rem 1rem;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-slate-200);
+  border-radius: 0.375rem;
+  color: var(--color-slate-700);
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
 .toggle-details-button:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--color-slate-100);
+  border-color: var(--color-slate-300);
 }
 
 .preferences-list {
-  margin-top: 24px;
+  margin-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0.75rem;
 }
 
 .preference-item {
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
+  padding: 0.75rem;
+  background: #F8FAFC;
+  border-radius: 0.375rem;
+  border-left: 2px solid var(--color-primary);
 }
 
 .preference-dimension {
-  font-size: 15px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 8px 0;
+  color: var(--color-slate-900);
+  margin: 0 0 0.375rem 0;
 }
 
 .preference-score {
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #3b82f6;
-  margin: 0 0 8px 0;
+  color: var(--color-primary);
+  margin: 0 0 0.375rem 0;
 }
 
 .preference-meaning {
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.6;
+  font-size: 0.75rem;
+  color: var(--color-slate-600);
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -241,26 +266,26 @@
 .results-actions {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: 1rem 0;
 }
 
 .continue-button {
-  padding: 14px 32px;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  padding: 0.625rem 1.5rem;
+  background: var(--color-primary);
   border: none;
-  border-radius: 12px;
+  border-radius: 0.375rem;
   color: white;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
   font-family: inherit;
 }
 
 .continue-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
 }
 
 .continue-button:active {
@@ -268,43 +293,58 @@
 }
 
 /* Mobile responsive */
-@media (max-width: 640px) {
-  .results-page {
-    padding: 24px 12px;
+@media (max-width: 768px) {
+  .results-container {
+    padding: 1rem 1rem 2rem;
+  }
+
+  .results-header {
+    margin-bottom: 1rem;
   }
 
   .results-title {
-    font-size: 24px;
+    font-size: 1rem;
   }
 
   .personality-code {
-    font-size: 28px;
+    font-size: 1.125rem;
+    letter-spacing: 0.0625rem;
   }
 
   .personality-description {
-    font-size: 14px;
+    font-size: 0.75rem;
   }
 
   .dimension-scores-section,
   .detailed-results-section {
-    padding: 24px 16px;
-    border-radius: 12px;
+    padding: 1rem;
+    border-radius: 0.375rem;
   }
 
   .section-title {
-    font-size: 18px;
+    font-size: 0.875rem;
   }
 
   .dimension-name {
-    font-size: 14px;
+    font-size: 0.75rem;
   }
 
   .dimension-value {
-    font-size: 13px;
+    font-size: 0.6875rem;
   }
 
   .continue-button {
     width: 100%;
     max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-container {
+    padding: 0.75rem 0.75rem 1.5rem;
+  }
+
+  .dimension-list {
+    gap: 0.875rem;
   }
 }

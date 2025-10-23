@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Header } from '../components/Header';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
 import { evaluateBigFive } from '../lib/tests/big5-evaluator';
@@ -72,6 +73,7 @@ export const ResultsBigFive: React.FC = () => {
   if (isLoading) {
     return (
       <div className="results-page-big5">
+        <Header />
         <div className="results-loading">
           <div className="loading-spinner"></div>
           <p>Loading your results...</p>
@@ -97,6 +99,7 @@ export const ResultsBigFive: React.FC = () => {
 
   return (
     <div className="results-page-big5">
+      <Header />
       <div className="results-container-big5">
         <div className="results-header-big5">
           <h1 className="results-title-big5">Your Big Five Personality Profile</h1>

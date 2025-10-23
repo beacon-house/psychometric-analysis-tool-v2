@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Header } from '../components/Header';
 import { supabase } from '../lib/supabase';
 import { storage } from '../lib/storage';
 import { evaluateHigh5 } from '../lib/tests/high5-evaluator';
@@ -81,7 +82,8 @@ export const ResultsHigh5: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="results-page">
+      <div className="results-page high5-results">
+        <Header />
         <div className="results-loading">
           <div className="loading-spinner"></div>
           <p>Loading your results...</p>
@@ -103,6 +105,7 @@ export const ResultsHigh5: React.FC = () => {
 
   return (
     <div className="results-page high5-results">
+      <Header />
       <div className="results-container">
         <div className="results-header">
           <h1 className="results-title">Your HIGH5 Strengths</h1>
