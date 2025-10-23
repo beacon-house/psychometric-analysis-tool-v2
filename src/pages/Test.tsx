@@ -74,7 +74,7 @@ export const Test: React.FC<TestPageProps> = ({
             student_id: studentData.uuid,
             test_name: testName,
             test_status: 'in_progress',
-            result_data: null,
+            result_data: {},
             completed_at: null,
           });
         } catch (error) {
