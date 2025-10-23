@@ -8,9 +8,16 @@ import '../styles/ContactModal.css';
 interface ContactModalProps {
   onSubmit: (data: ContactFormData) => void;
   isOpen: boolean;
+  isDismissable?: boolean;
+  isCareerReport?: boolean;
 }
 
-export const ContactModal: React.FC<ContactModalProps> = ({ onSubmit, isOpen }) => {
+export const ContactModal: React.FC<ContactModalProps> = ({
+  onSubmit,
+  isOpen,
+  isDismissable = true,
+  isCareerReport = false
+}) => {
   const [formData, setFormData] = useState<ContactFormData>({
     studentName: '',
     parentEmail: '',
@@ -71,13 +78,23 @@ export const ContactModal: React.FC<ContactModalProps> = ({ onSubmit, isOpen }) 
 
   if (!isOpen) return null;
 
+  const handleOverlayClick = () => {
+    if (isDismissable) {
+      // Allow closing if dismissable (not implemented yet, but hook for future)
+    }
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Congratulations!</h2>
+          <h2 className="modal-title">
+            {isCareerReport ? 'Unlock Your Career Report!' : 'Congratulations!'}
+          </h2>
           <p className="modal-subtitle">
-            You've completed all four psychometric assessments. To receive your comprehensive analysis reports, please provide your contact information below.
+            {isCareerReport
+              ? 'You\'ve completed all tests and unlocked your comprehensive career analysis! Enter your details below to receive your personalized career guidance report.'
+              : 'You\'ve completed all four psychometric assessments. To receive your comprehensive analysis reports, please provide your contact information below.'}
           </p>
         </div>
 

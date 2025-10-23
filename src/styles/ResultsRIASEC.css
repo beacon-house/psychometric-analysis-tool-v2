@@ -1,0 +1,433 @@
+/* RIASEC Career Interest Test Results Page Styles */
+
+.results-page-riasec {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  padding: 40px 20px;
+}
+
+.results-container-riasec {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.results-header-riasec {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.results-title-riasec {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 24px 0;
+}
+
+.holland-code-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.holland-code-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.holland-code-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 4px;
+}
+
+.results-subtitle-riasec {
+  font-size: 18px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Hexagon Section */
+.hexagon-section {
+  margin-bottom: 48px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section-title-riasec {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 32px 0;
+  text-align: center;
+}
+
+.hexagon-container {
+  max-width: 500px;
+  margin: 0 auto 24px auto;
+  padding: 20px;
+}
+
+.hexagon-svg {
+  width: 100%;
+  height: auto;
+}
+
+.hexagon-outline {
+  fill: none;
+  stroke: #cbd5e1;
+  stroke-width: 0.5;
+}
+
+.hexagon-grid-line {
+  stroke: #e2e8f0;
+  stroke-width: 0.3;
+}
+
+.hexagon-score-fill {
+  fill: rgba(102, 126, 234, 0.3);
+  stroke: #667eea;
+  stroke-width: 0.8;
+}
+
+.hexagon-label {
+  font-size: 5px;
+  font-weight: 700;
+  fill: #1a202c;
+}
+
+.hexagon-score {
+  font-size: 3px;
+  font-weight: 600;
+  fill: #667eea;
+}
+
+.hexagon-legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.legend-name {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Top Themes Section */
+.top-themes-section {
+  margin-bottom: 48px;
+}
+
+.top-themes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.top-theme-card {
+  position: relative;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-top: 4px solid #667eea;
+}
+
+.theme-rank-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.theme-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 16px 0;
+}
+
+.theme-score-display {
+  font-size: 36px;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 16px;
+}
+
+.theme-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0;
+}
+
+/* All Scores Section */
+.all-scores-section {
+  margin-bottom: 48px;
+  padding: 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.scores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.score-item {
+  padding: 24px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.score-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.score-theme-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+  flex: 1;
+}
+
+.score-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.score-bar-container {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.score-interpretation {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Actions Section */
+.results-actions-riasec {
+  text-align: center;
+  padding: 32px;
+}
+
+.continue-button-riasec {
+  padding: 16px 48px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.continue-button-riasec:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading State */
+.results-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .results-page-riasec {
+    padding: 24px 16px;
+  }
+
+  .results-header-riasec {
+    padding: 24px 16px;
+    margin-bottom: 32px;
+  }
+
+  .results-title-riasec {
+    font-size: 28px;
+  }
+
+  .holland-code-display {
+    padding: 12px 24px;
+  }
+
+  .holland-code-value {
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+
+  .results-subtitle-riasec {
+    font-size: 16px;
+  }
+
+  .hexagon-section,
+  .all-scores-section {
+    padding: 24px 16px;
+  }
+
+  .section-title-riasec {
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+
+  .hexagon-legend {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .top-themes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .top-theme-card {
+    padding: 24px;
+  }
+
+  .theme-name {
+    font-size: 20px;
+  }
+
+  .theme-score-display {
+    font-size: 28px;
+  }
+
+  .score-header {
+    flex-wrap: wrap;
+  }
+
+  .score-theme-name {
+    font-size: 18px;
+  }
+
+  .score-value {
+    font-size: 18px;
+  }
+
+  .continue-button-riasec {
+    width: 100%;
+    padding: 14px 32px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .results-title-riasec {
+    font-size: 24px;
+  }
+
+  .holland-code-value {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .hexagon-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-rank-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}

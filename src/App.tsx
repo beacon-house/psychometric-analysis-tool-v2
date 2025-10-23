@@ -10,6 +10,9 @@ import { TestHigh5 } from './pages/TestHigh5';
 import { ResultsHigh5 } from './pages/ResultsHigh5';
 import { TestBigFive } from './pages/TestBigFive';
 import { ResultsBigFive } from './pages/ResultsBigFive';
+import { TestRIASEC } from './pages/TestRIASEC';
+import { ResultsRIASEC } from './pages/ResultsRIASEC';
+import { NextSteps } from './pages/NextSteps';
 
 const App: React.FC = () => {
   return (
@@ -22,6 +25,9 @@ const App: React.FC = () => {
         <Route path="/test/high5/results" element={<ResultsHigh5 />} />
         <Route path="/test/big-five" element={<TestBigFive />} />
         <Route path="/test/big-five/results" element={<ResultsBigFive />} />
+        <Route path="/test/riasec" element={<TestRIASEC />} />
+        <Route path="/test/riasec/results" element={<ResultsRIASEC />} />
+        <Route path="/next-steps" element={<NextSteps />} />
       </Routes>
     </BrowserRouter>
   );

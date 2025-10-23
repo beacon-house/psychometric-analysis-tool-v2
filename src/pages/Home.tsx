@@ -69,6 +69,8 @@ export const Home: React.FC = () => {
       navigate('/test/high5');
     } else if (testName === 'Big Five') {
       navigate('/test/big-five');
+    } else if (testName === 'RIASEC') {
+      navigate('/test/riasec');
     } else {
       alert(`Test interface for ${testName} will be implemented soon.`);
     }
