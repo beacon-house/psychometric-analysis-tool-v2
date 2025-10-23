@@ -182,19 +182,16 @@ export const Test: React.FC<TestPageProps> = ({
         console.log(`[${testName}] Successfully updated test_responses`);
       }
 
-      // Check if this is RIASEC and all tests are completed
+      // Check if this is RIASEC - if so, always show contact modal
       const isRIASEC = testName === 'RIASEC';
-      const allTestsCompleted = studentData && TEST_ORDER.every(test => {
-        const progress = studentData.testProgress[test];
-        return progress && progress.completedAt;
-      });
 
-      // If RIASEC and all tests completed, show contact modal if not already submitted
-      if (isRIASEC && allTestsCompleted && !studentData?.parentEmail) {
-        console.log(`[${testName}] All tests completed, showing contact modal`);
+      if (isRIASEC) {
+        // For RIASEC, always show the contact modal after completion
+        // Do not show results until after contact details are submitted and LLM report is generated
+        console.log(`[${testName}] Test completed, showing contact modal for career report`);
         setShowContactModal(true);
       } else {
-        // Navigate to results page
+        // For other tests, navigate directly to results page
         const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
         console.log(`[${testName}] Navigating to results page:`, resultsRoute);
         navigate(resultsRoute, {
@@ -235,7 +232,7 @@ export const Test: React.FC<TestPageProps> = ({
           student_name: formData.studentName,
           parent_email: formData.parentEmail,
           parent_whatsapp: formData.parentWhatsapp,
-          overall_status: 'reports_generated',
+          overall_status: 'contact_submitted',
           submission_timestamp: new Date().toISOString(),
         });
 
@@ -255,9 +252,10 @@ export const Test: React.FC<TestPageProps> = ({
         }
       }
 
-      // Trigger webhook for Make.com
+      // Trigger webhook for Make.com to generate LLM career report
       const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
       if (webhookUrl) {
+        console.log('[ContactModal] Triggering webhook for LLM report generation');
         await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -272,7 +270,8 @@ export const Test: React.FC<TestPageProps> = ({
         });
       }
 
-      // Navigate to next steps page
+      // Navigate to next steps page where LLM report will be generated/displayed
+      console.log('[ContactModal] Contact info submitted, navigating to next steps');
       navigate('/next-steps');
     } catch (error) {
       console.error('Error submitting contact information:', error);
