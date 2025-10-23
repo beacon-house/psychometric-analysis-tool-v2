@@ -95,6 +95,12 @@ export const Test: React.FC<TestPageProps> = ({
     // Save to Supabase (background, don't block)
     const studentData = storage.getStudentData();
     if (studentData) {
+      console.log(`[${testName}] Saving response to Supabase:`, {
+        student_id: studentData.uuid,
+        test_name: testName,
+        question: questionKey,
+        total_responses: Object.keys(updatedResponses).length,
+      });
       supabase
         .from('test_responses')
         .upsert({
@@ -104,7 +110,11 @@ export const Test: React.FC<TestPageProps> = ({
           responses: updatedResponses,
         })
         .then(({ error }) => {
-          if (error) console.error('Error saving to Supabase:', error);
+          if (error) {
+            console.error(`[${testName}] Error saving to Supabase:`, error);
+          } else {
+            console.log(`[${testName}] Successfully saved response to Supabase`);
+          }
         });
     }
 
@@ -130,21 +140,31 @@ export const Test: React.FC<TestPageProps> = ({
       if (!studentData) throw new Error('Student data not found');
 
       // Evaluate test results
+      console.log(`[${testName}] Evaluating test with ${Object.keys(finalResponses).length} responses`);
       const evaluation = evaluateFunction(finalResponses);
+      console.log(`[${testName}] Evaluation complete:`, evaluation);
 
       // Mark test as completed in localStorage
       storage.completeTest(testName);
+      console.log(`[${testName}] Marked as completed in localStorage`);
 
       // Save results to Supabase
-      await supabase.from('test_results').upsert({
+      console.log(`[${testName}] Saving results to Supabase test_results table`);
+      const { error: resultsError } = await supabase.from('test_results').upsert({
         student_id: studentData.uuid,
         test_name: testName,
         result_data: evaluation,
         completed_at: new Date().toISOString(),
       });
+      if (resultsError) {
+        console.error(`[${testName}] Error saving results:`, resultsError);
+      } else {
+        console.log(`[${testName}] Successfully saved results to test_results`);
+      }
 
       // Update test_responses to completed
-      await supabase
+      console.log(`[${testName}] Updating test_responses to completed status`);
+      const { error: responsesError } = await supabase
         .from('test_responses')
         .upsert({
           student_id: studentData.uuid,
@@ -153,9 +173,16 @@ export const Test: React.FC<TestPageProps> = ({
           responses: finalResponses,
           completed_at: new Date().toISOString(),
         });
+      if (responsesError) {
+        console.error(`[${testName}] Error updating test_responses:`, responsesError);
+      } else {
+        console.log(`[${testName}] Successfully updated test_responses`);
+      }
 
       // Navigate to results page
-      navigate(`/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`, {
+      const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
+      console.log(`[${testName}] Navigating to results page:`, resultsRoute);
+      navigate(resultsRoute, {
         state: { evaluation },
       });
     } catch (error) {

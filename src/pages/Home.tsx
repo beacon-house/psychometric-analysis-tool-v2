@@ -8,6 +8,7 @@ import { TestCard } from '../components/TestCard';
 import { ProgressIndicator } from '../components/ProgressIndicator';
 import { ContactModal } from '../components/ContactModal';
 import { useStudentData } from '../hooks/useStudentData';
+import { storage } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import { TEST_METADATA, TEST_ORDER } from '../lib/tests';
 import type { TestInfo, TestName, ContactFormData, TestStatus } from '../types';
@@ -54,13 +55,20 @@ export const Home: React.FC = () => {
     }));
   };
 
+  const handleResetProgress = () => {
+    if (window.confirm('Are you sure you want to reset all test progress? This action cannot be undone.')) {
+      storage.clearData();
+      window.location.reload();
+    }
+  };
+
   const handleStartTest = (testName: TestName) => {
     if (testName === '16Personalities') {
       navigate('/test/16personalities');
     } else if (testName === 'HIGH5') {
       navigate('/test/high5');
     } else if (testName === 'Big Five') {
-      navigate('/test/bigfive');
+      navigate('/test/big-five');
     } else {
       alert(`Test interface for ${testName} will be implemented soon.`);
     }
@@ -158,6 +166,24 @@ export const Home: React.FC = () => {
         </div>
 
         <ProgressIndicator completed={completedCount} total={4} />
+
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <button
+            onClick={handleResetProgress}
+            style={{
+              padding: '8px 16px',
+              fontSize: '14px',
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '500',
+            }}
+          >
+            Reset All Progress (Temporary)
+          </button>
+        </div>
 
         <div className="tests-grid">
           {tests.map(test => (

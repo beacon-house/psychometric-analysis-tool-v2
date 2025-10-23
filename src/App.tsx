@@ -20,8 +20,8 @@ const App: React.FC = () => {
         <Route path="/test/16personalities/results" element={<Results16Personalities />} />
         <Route path="/test/high5" element={<TestHigh5 />} />
         <Route path="/test/high5/results" element={<ResultsHigh5 />} />
-        <Route path="/test/bigfive" element={<TestBigFive />} />
-        <Route path="/test/bigfive/results" element={<ResultsBigFive />} />
+        <Route path="/test/big-five" element={<TestBigFive />} />
+        <Route path="/test/big-five/results" element={<ResultsBigFive />} />
       </Routes>
     </BrowserRouter>
   );
