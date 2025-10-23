@@ -113,7 +113,6 @@ export const Home: React.FC = () => {
           await supabase.from('test_responses').upsert({
             student_id: studentData.uuid,
             test_name: testName,
-            test_status: 'completed',
             responses: progress.responses,
             completed_at: progress.completedAt,
           });

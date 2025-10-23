@@ -53,3 +53,27 @@ export interface Question {
   text: string;
   testName: TestName;
 }
+
+export interface TestResult {
+  id: string;
+  student_id: string;
+  test_name: TestName;
+  test_status: 'in_progress' | 'completed' | 'abandoned';
+  result_data: any;
+  questions_answered: number;
+  last_activity_at: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TestResponse {
+  id: string;
+  student_id: string;
+  test_name: TestName;
+  responses: Record<string, number> | null;
+  questions_answered: number;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
