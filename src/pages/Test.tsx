@@ -30,6 +30,8 @@ export const Test: React.FC<TestPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [lastAnswerTime, setLastAnswerTime] = useState<number>(0);
+  const [completionInProgress, setCompletionInProgress] = useState(false);
 
   // Load existing progress on mount
   useEffect(() => {
@@ -90,6 +92,18 @@ export const Test: React.FC<TestPageProps> = ({
   const handleAnswer = async (value: number) => {
     if (!currentQuestion) return;
 
+    // Prevent rapid successive clicks (debounce)
+    const now = Date.now();
+    if (now - lastAnswerTime < 200) {
+      return;
+    }
+    setLastAnswerTime(now);
+
+    // Prevent submission if already in progress
+    if (completionInProgress) {
+      return;
+    }
+
     const questionKey = `q${currentQuestion.id}`;
     const updatedResponses = {
       ...responses,
@@ -110,6 +124,7 @@ export const Test: React.FC<TestPageProps> = ({
 
     // Check if this is the last question
     if (currentQuestionIndex === questions.length - 1) {
+      setCompletionInProgress(true);
       await handleTestCompletion(updatedResponses);
     } else {
       setCurrentQuestionIndex(prev => prev + 1);
@@ -123,6 +138,11 @@ export const Test: React.FC<TestPageProps> = ({
   };
 
   const handleTestCompletion = async (finalResponses: Record<string, number>) => {
+    // Double-check to prevent concurrent executions
+    if (isSubmitting) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -135,7 +155,7 @@ export const Test: React.FC<TestPageProps> = ({
       // Mark test as completed in localStorage
       storage.completeTest(testName);
 
-      // Save final results to Supabase - single atomic operation
+      // Save final results to Supabase - single atomic operation with conflict resolution
       const { error: resultsError } = await supabase.from('test_results').upsert({
         student_id: studentData.uuid,
         test_name: testName,
@@ -146,7 +166,13 @@ export const Test: React.FC<TestPageProps> = ({
 
       if (resultsError) {
         console.error(`[${testName}] Error saving results:`, resultsError);
-        throw new Error('Failed to save test results to database');
+        // Check if it's a constraint violation (might indicate concurrent request)
+        if (resultsError.code === '23505') {
+          console.warn(`[${testName}] Duplicate key constraint - test already submitted`);
+          // Continue anyway as the data is already saved
+        } else {
+          throw new Error('Failed to save test results to database');
+        }
       }
 
       // Check if this is RIASEC - if so, always show contact modal
@@ -164,6 +190,7 @@ export const Test: React.FC<TestPageProps> = ({
     } catch (error) {
       console.error('Error completing test:', error);
       setIsSubmitting(false);
+      setCompletionInProgress(false);
       const retry = window.confirm(
         'There was an error saving your results to the database. Would you like to retry? (Click Cancel to continue anyway)'
       );
@@ -191,6 +218,7 @@ export const Test: React.FC<TestPageProps> = ({
       return;
     } finally {
       setIsSubmitting(false);
+      setCompletionInProgress(false);
     }
   };
 

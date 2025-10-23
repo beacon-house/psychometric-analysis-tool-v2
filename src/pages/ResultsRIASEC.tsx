@@ -109,8 +109,9 @@ export const ResultsRIASEC: React.FC = () => {
           </p>
         </div>
 
-        <div className="hexagon-section">
-          <h2 className="section-title-riasec">Interest Profile Visualization</h2>
+        <div className="hexagon-and-themes-container">
+          <div className="hexagon-section">
+            <h2 className="section-title-riasec">Interest Profile Visualization</h2>
           <div className="hexagon-container">
             <svg viewBox="0 0 100 100" className="hexagon-svg">
               {/* Hexagon outline */}
@@ -176,11 +177,11 @@ export const ResultsRIASEC: React.FC = () => {
                 <span className="legend-name">{score.theme}</span>
               </div>
             ))}
+            </div>
           </div>
-        </div>
 
-        <div className="top-themes-section">
-          <h2 className="section-title-riasec">Your Top Three Career Interest Areas</h2>
+          <div className="top-themes-section">
+            <h2 className="section-title-riasec">Your Top Three</h2>
           <div className="top-themes-grid">
             {topThreeThemes.map((theme) => (
               <div key={theme.rank} className="top-theme-card">
@@ -190,6 +191,7 @@ export const ResultsRIASEC: React.FC = () => {
                 <p className="theme-description">{theme.description}</p>
               </div>
             ))}
+            </div>
           </div>
         </div>
 

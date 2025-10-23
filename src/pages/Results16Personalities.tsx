@@ -93,17 +93,22 @@ export const Results16Personalities: React.FC = () => {
       <Header />
       <div className="results-container">
         <div className="results-header">
-          <h1 className="results-title">Your Personality Type</h1>
-          <div className="personality-type-badge">
-            <span className="personality-code">{personalityType.fullCode}</span>
-          </div>
-          <p className="personality-description">{personalityType.description}</p>
+          <h1 className="results-title">Your 16 Personalities Results</h1>
         </div>
 
-        <div className="dimension-scores-section">
-          <h2 className="section-title">Dimension Scores</h2>
+        <div className="results-main-content">
+          <div className="personality-type-section">
+            <h2 className="section-title">Your Personality Type</h2>
+            <div className="personality-type-badge">
+              <span className="personality-code">{personalityType.fullCode}</span>
+            </div>
+            <p className="personality-description">{personalityType.description}</p>
+          </div>
 
-          <div className="dimension-list">
+          <div className="dimension-scores-section">
+            <h2 className="section-title">Dimension Scores</h2>
+
+            <div className="dimension-list">
             {Object.entries(dimensionScores).map(([dimension, score]) => (
               <div key={dimension} className="dimension-item">
                 <div className="dimension-header">
@@ -130,10 +135,10 @@ export const Results16Personalities: React.FC = () => {
                 </div>
               </div>
             ))}
+            </div>
           </div>
-        </div>
 
-        <div className="detailed-results-section">
+          <div className="detailed-results-section">
           <button
             className="toggle-details-button"
             onClick={() => setShowDetailedResults(!showDetailedResults)}
@@ -152,12 +157,13 @@ export const Results16Personalities: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+          </div>
 
-        <div className="results-actions">
-          <button className="continue-button" onClick={handleContinue}>
-            Continue to Next Test
-          </button>
+          <div className="results-actions">
+            <button className="continue-button" onClick={handleContinue}>
+              Continue to Next Test
+            </button>
+          </div>
         </div>
       </div>
     </div>
