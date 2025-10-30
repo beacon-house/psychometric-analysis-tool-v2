@@ -32,7 +32,7 @@ export const TEST_METADATA: Record<TestName, Omit<TestInfo, 'status'>> = {
     id: 'RIASEC',
     title: 'RIASEC Career Test',
     description: 'Explore your career interests across six work personality themes using Holland codes.',
-    questionCount: 47,
+    questionCount: 48,
     estimatedTime: '10-12 minutes',
     icon: '🎯',
   },

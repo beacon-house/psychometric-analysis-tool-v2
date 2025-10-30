@@ -1,5 +1,7 @@
 # Functional Requirements - Psychometric Analysis Tool
 
+Last Updated: October 30, 2025
+
 ## Golden Rule
 **Get context, think design and layout first, think of the target user's interactions first and only then work on the rest of the implementations.**
 
@@ -64,13 +66,14 @@
 - 16 Personalities: `src/lib/tests/16personalities-config.ts`
 - HIGH5: `src/lib/tests/high5-config.ts`
 - Big Five: `src/lib/tests/big5-config.ts`
+- RIASEC: `src/lib/tests/riasec-config.ts`
 
 ### 4. Test Progress Persistence
 **As a student**, I want my progress to be saved automatically so I don't lose my answers if I close the browser.
 
 **Acceptance Criteria:**
 - Auto-save each answer to localStorage immediately
-- Sync responses to Supabase in background (non-blocking)
+- Create in_progress record in test_results when test starts
 - Resume from last answered question when returning
 - Maintain session via UUID stored in localStorage
 - Create student record in Supabase on first test interaction
@@ -86,15 +89,17 @@
 **Acceptance Criteria:**
 - Evaluate responses using test-specific algorithm
 - Calculate scores and interpretations
-- Save results to `test_results` table in Supabase
-- Mark test as completed in localStorage and Supabase
+- Update `test_results` with results and mark as completed
+- Mark test as completed in localStorage
 - Redirect to results page with evaluation data
+- For RIASEC: Show contact modal after completion
 
 **Implementation:**
 - Evaluation logic:
   - 16 Personalities: `src/lib/tests/16personalities-evaluator.ts`
   - HIGH5: `src/lib/tests/high5-evaluator.ts`
   - Big Five: `src/lib/tests/big5-evaluator.ts`
+  - RIASEC: `src/lib/tests/riasec-evaluator.ts`
 - Universal test handler: `Test.tsx` (handleTestCompletion)
 
 ### 6. Viewing Test Results
@@ -108,24 +113,26 @@
 - Results persist and are retrievable anytime
 
 **Implementation:**
-- Results pages: `Results16Personalities.tsx`, `ResultsHigh5.tsx`, `ResultsBigFive.tsx`
+- Results pages: `Results16Personalities.tsx`, `ResultsHigh5.tsx`, `ResultsBigFive.tsx`, `ResultsRIASEC.tsx`
 - Each results page fetches from `test_results` table using student_id + test_name
 
 ### 7. Contact Information Collection
-**As a student**, I want to provide my contact details after completing all tests so I can receive my comprehensive reports.
+**As a student**, I want to provide my contact details after completing the RIASEC test so I can receive my comprehensive reports.
 
 **Acceptance Criteria:**
-- Modal appears automatically after completing all 4 tests
+- Modal appears automatically after completing RIASEC test
+- Modal is non-dismissable (must submit to proceed)
 - Required fields: Student name, Parent email, Parent WhatsApp
 - Form validation for email and phone formats
 - Update student record in Supabase with contact info
-- Update overall_status to 'reports_generated'
+- Update overall_status to 'contact_submitted'
 - Trigger webhook to Make.com with complete student data
-- Sync all test_responses to Supabase
+- Navigate to NextSteps confirmation page
 
 **Implementation:**
 - Component: `ContactModal.tsx`
-- Submission handler: `Home.tsx` (handleContactSubmit)
+- Submission handler: `Test.tsx` (handleContactSubmit)
+- Confirmation page: `NextSteps.tsx`
 - Webhook URL: `VITE_WEBHOOK_URL` environment variable
 
 ### 8. Session Management
@@ -154,24 +161,17 @@
 - `submission_timestamp` (timestamptz): Contact form submission time
 - `created_at`, `updated_at` (timestamptz): Timestamps
 
-### Table: test_responses
-- `id` (uuid, PK): Response record identifier
-- `student_id` (uuid, FK): References students.id
-- `test_name` (text): Test identifier
-- `test_status` (text): 'in_progress' or 'completed'
-- `responses` (jsonb): All question-answer pairs
-- `completed_at` (timestamptz): Completion timestamp
-- `created_at`, `updated_at` (timestamptz): Timestamps
-- Unique constraint: (student_id, test_name)
-
 ### Table: test_results
 - `id` (uuid, PK): Result record identifier
 - `student_id` (uuid, FK): References students.id
-- `test_name` (text): Test identifier
-- `result_data` (jsonb): Computed scores and interpretations
+- `test_name` (text): Test identifier (16Personalities, HIGH5, Big Five, RIASEC)
+- `test_status` (text): 'in_progress' or 'completed'
+- `result_data` (jsonb): Computed scores and interpretations (empty {} for in_progress)
 - `completed_at` (timestamptz): Evaluation timestamp
 - `created_at`, `updated_at` (timestamptz): Timestamps
 - Unique constraint: (student_id, test_name)
+
+Note: test_responses table was removed - localStorage handles all progress tracking during test-taking
 
 ## Business Logic
 
@@ -191,17 +191,18 @@
 
 ### Data Flow
 1. Student visits site � UUID generated � localStorage initialized � Student record created in Supabase
-2. Student starts test � Test progress initialized in localStorage
-3. Student answers question � Response saved to localStorage � Synced to test_responses in Supabase
-4. Student completes test � Results evaluated � Saved to test_results in Supabase � Redirected to results
-5. Student completes all tests � Contact modal appears
-6. Student submits contact � Student record updated � Webhook triggered � Make.com processes lead
+2. Student starts test � Test progress initialized in localStorage � in_progress record created in test_results
+3. Student answers question � Response saved to localStorage (no database writes during test-taking)
+4. Student completes test � Results evaluated � test_results updated with results and completed status � Redirected to results
+5. Student completes RIASEC � Contact modal appears (non-dismissable)
+6. Student submits contact � Student record updated � Webhook triggered � Redirected to NextSteps page
 
 ### Error Handling
 - Database operations fail silently with console.error
 - localStorage acts as primary source of truth
-- Supabase acts as backup/sync mechanism
+- Supabase stores final results and status only
 - Results pages gracefully redirect to home if data not found
+- User can continue even if database save fails (with confirmation dialog)
 
 ## Test Metadata Structure
 
@@ -221,8 +222,9 @@ Each test provides:
 ### Pages
 - `Home.tsx`: Dashboard with test selection
 - `Test.tsx`: Universal test-taking component
-- `Test[TestName].tsx`: Test-specific configuration wrappers
+- `Test[TestName].tsx`: Test-specific configuration wrappers (16Personalities, High5, BigFive, RIASEC)
 - `Results[TestName].tsx`: Test-specific results display
+- `NextSteps.tsx`: Post-contact confirmation page
 
 ### Components
 - `Header.tsx`: App header with branding
@@ -246,8 +248,11 @@ Each test provides:
 - `/test/16personalities/results` - 16 Personalities results
 - `/test/high5` - HIGH5 test
 - `/test/high5/results` - HIGH5 results
-- `/test/bigfive` - Big Five test
-- `/test/bigfive/results` - Big Five results
+- `/test/big-five` - Big Five test
+- `/test/big-five/results` - Big Five results
+- `/test/riasec` - RIASEC test
+- `/test/riasec/results` - RIASEC results
+- `/next-steps` - Post-contact confirmation page
 
 ## Environment Variables
 - `VITE_SUPABASE_URL`: Supabase project URL
@@ -255,7 +260,6 @@ Each test provides:
 - `VITE_WEBHOOK_URL`: Make.com webhook endpoint (optional)
 
 ## Known Limitations
-- RIASEC test not yet implemented
 - No admin dashboard for team members
 - Database operations fail silently without user notification
 - No retry mechanism for failed Supabase operations

@@ -1,6 +1,6 @@
 # Project Context - Psychometric Analysis Tool
 
-Last Updated: October 23, 2025
+Last Updated: October 30, 2025
 
 ## Golden Rule
 
@@ -44,7 +44,7 @@ A web-based psychometric assessment platform designed for Grade 9-12 students to
 
 ### Completed Features
 
-#### 1. Three Psychometric Tests (Fully Implemented)
+#### 1. Four Psychometric Tests (Fully Implemented)
 
 16 Personalities Test (32 questions, 8-10 minutes)
 - Myers-Briggs based assessment
@@ -62,6 +62,12 @@ Big Five (OCEAN) Test (50 questions, 8-10 minutes)
 - Route: /test/big-five
 - Results: Percentile scores, trait interpretations, comparison charts
 
+RIASEC Career Test (48 questions, 10-12 minutes)
+- Holland Codes assessment across 6 career themes
+- 6 themes: Realistic, Investigative, Artistic, Social, Enterprising, Conventional
+- Route: /test/riasec
+- Results: Theme scores, top interests, career recommendations
+
 #### 2. Core Functionality
 - Student session management (UUID-based) - DONE
 - Progress tracking and auto-save - DONE
@@ -72,8 +78,9 @@ Big Five (OCEAN) Test (50 questions, 8-10 minutes)
 - Results display with visualizations - DONE
 - Overall progress indicator (X of 4 tests completed) - DONE
 - Test status tracking (available, in_progress, completed, locked) - DONE
-- Contact information collection (after all tests) - DONE
+- Contact information collection (after RIASEC test) - DONE
 - Webhook integration with Make.com - DONE
+- NextSteps confirmation page - DONE
 - Temporary reset button for clearing progress - DONE
 
 #### 3. Database Structure (Supabase)
@@ -89,25 +96,19 @@ students table:
 - submission_timestamp (timestamptz)
 - created_at, updated_at (timestamptz)
 
-test_responses table:
-- id (uuid, PK)
-- student_id (uuid, FK to students.id)
-- test_name (text) - "16Personalities", "HIGH5", "Big Five"
-- test_status (text) - "in_progress" or "completed"
-- responses (jsonb) - All question-answer pairs
-- completed_at (timestamptz)
-- Unique constraint: (student_id, test_name)
-
 test_results table:
 - id (uuid, PK)
 - student_id (uuid, FK to students.id)
-- test_name (text)
-- result_data (jsonb) - Computed scores and interpretations
+- test_name (text) - "16Personalities", "HIGH5", "Big Five", "RIASEC"
+- test_status (text) - "in_progress" or "completed"
+- result_data (jsonb) - Computed scores and interpretations (empty {} for in_progress)
 - completed_at (timestamptz)
+- created_at, updated_at (timestamptz)
 - Unique constraint: (student_id, test_name)
 
+Note: test_responses table was removed - localStorage handles all progress tracking
+
 ### Pending Features
-- RIASEC Career Test (48 questions, 10-12 minutes) - NOT DONE
 - Admin dashboard for team members - NOT DONE
 - Lead management interface - NOT DONE
 - Retry mechanism for failed Supabase operations - NOT DONE
@@ -156,6 +157,9 @@ IMPORTANT: Never use purple, indigo, or violet hues unless explicitly requested.
 /test/high5/results - Results page
 /test/big-five - Big Five test
 /test/big-five/results - Results page
+/test/riasec - RIASEC test
+/test/riasec/results - Results page
+/next-steps - Post-contact confirmation page
 
 Route Generation Rule:
 testName.toLowerCase().replace(/\s+/g, '-')
@@ -216,10 +220,11 @@ Test.tsx is a reusable component that:
 
 ### Data Flow
 1. First Visit: UUID generated, localStorage initialized, Student record in Supabase
-2. During Test: Each response saved to localStorage, Background sync to Supabase
-3. Test Completion: Evaluate, Save results to test_results, Update test_responses, Navigate to results
-4. All Tests Done: Contact modal appears
-5. Contact Submit: Update student record, Sync all data, Trigger webhook
+2. Start Test: Create in_progress record in test_results with empty result_data
+3. During Test: Each response saved to localStorage (no database writes during test-taking)
+4. Test Completion: Evaluate, Update test_results with results and completed status, Navigate to results
+5. RIASEC Completion: Contact modal appears (non-dismissable)
+6. Contact Submit: Update student record, Trigger webhook, Navigate to NextSteps page
 
 ## Recent Fixes and Issues Resolved
 
@@ -230,6 +235,15 @@ Root Cause: Route mismatch
 - Defined route: /test/bigfive/results
 
 Solution: Standardized all routes to use hyphenated format (big-five)
+
+### Issue 2: Database Save Error on Test Completion (FIXED - Oct 30, 2025)
+Problem: "Error saving your results to the database" alert appearing
+Root Cause: NOT NULL constraint violation
+- test_results.result_data column had NOT NULL constraint from initial migration
+- Code was inserting result_data: null for in_progress tests
+- Database rejected the insert
+
+Solution: Changed in_progress record to use result_data: {} (empty object) instead of null
 
 ### Debugging Enhancements
 Added comprehensive console logging in Test.tsx:
@@ -316,7 +330,6 @@ Added "Reset All Progress (Temporary)" button on home page:
 - Database operations fail silently
 - No retry mechanism for failed operations
 - Direct URL navigation may cause inconsistencies
-- RIASEC test not implemented
 
 ## Integration Points
 
