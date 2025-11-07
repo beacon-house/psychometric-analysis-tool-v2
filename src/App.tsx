@@ -1,5 +1,5 @@
 // Main application component
-// Root component with routing configuration
+// Root component with routing configuration including student and admin routes
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -13,11 +13,14 @@ import { ResultsBigFive } from './pages/ResultsBigFive';
 import { TestRIASEC } from './pages/TestRIASEC';
 import { ResultsRIASEC } from './pages/ResultsRIASEC';
 import { NextSteps } from './pages/NextSteps';
+import { AdminLogin } from './pages/AdminLogin';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Student-facing routes */}
         <Route path="/" element={<Home />} />
         <Route path="/test/16personalities" element={<Test16Personalities />} />
         <Route path="/test/16personalities/results" element={<Results16Personalities />} />
@@ -28,6 +31,10 @@ const App: React.FC = () => {
         <Route path="/test/riasec" element={<TestRIASEC />} />
         <Route path="/test/riasec/results" element={<ResultsRIASEC />} />
         <Route path="/next-steps" element={<NextSteps />} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

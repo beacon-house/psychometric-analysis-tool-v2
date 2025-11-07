@@ -4,11 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TestQuestion } from '../components/TestQuestion';
-import { ContactModal } from '../components/ContactModal';
 import { storage } from '../lib/storage';
 import { supabase } from '../lib/supabase';
-import { TEST_ORDER } from '../lib/tests';
-import type { TestName, ContactFormData } from '../types';
+import type { TestName } from '../types';
 import '../styles/Test.css';
 
 interface TestPageProps {
@@ -29,7 +27,6 @@ export const Test: React.FC<TestPageProps> = ({
   const [responses, setResponses] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
-  const [showContactModal, setShowContactModal] = useState(false);
   const [lastAnswerTime, setLastAnswerTime] = useState<number>(0);
   const [completionInProgress, setCompletionInProgress] = useState(false);
 
@@ -76,6 +73,8 @@ export const Test: React.FC<TestPageProps> = ({
             test_status: 'in_progress',
             result_data: {},
             completed_at: null,
+          }, {
+            onConflict: 'student_id,test_name'
           });
         } catch (error) {
           console.error('Error creating test_results record:', error);
@@ -162,6 +161,8 @@ export const Test: React.FC<TestPageProps> = ({
         test_status: 'completed',
         result_data: evaluation,
         completed_at: new Date().toISOString(),
+      }, {
+        onConflict: 'student_id,test_name'
       });
 
       if (resultsError) {
@@ -175,18 +176,11 @@ export const Test: React.FC<TestPageProps> = ({
         }
       }
 
-      // Check if this is RIASEC - if so, always show contact modal
-      const isRIASEC = testName === 'RIASEC';
-
-      if (isRIASEC) {
-        setShowContactModal(true);
-      } else {
-        // For other tests, navigate directly to results page
-        const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
-        navigate(resultsRoute, {
-          state: { evaluation },
-        });
-      }
+      // Navigate to results page for all tests (including RIASEC)
+      const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
+      navigate(resultsRoute, {
+        state: { evaluation },
+      });
     } catch (error) {
       console.error('Error completing test:', error);
       setIsSubmitting(false);
@@ -206,14 +200,10 @@ export const Test: React.FC<TestPageProps> = ({
       } else {
         // User chose to continue without saving to database
         const evaluation = evaluateFunction(finalResponses);
-        if (testName === 'RIASEC') {
-          setShowContactModal(true);
-        } else {
-          const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
-          navigate(resultsRoute, {
-            state: { evaluation },
-          });
-        }
+        const resultsRoute = `/test/${testName.toLowerCase().replace(/\s+/g, '-')}/results`;
+        navigate(resultsRoute, {
+          state: { evaluation },
+        });
       }
       return;
     } finally {
@@ -228,59 +218,6 @@ export const Test: React.FC<TestPageProps> = ({
 
   const confirmExit = () => {
     navigate('/');
-  };
-
-  const handleContactSubmit = async (formData: ContactFormData) => {
-    const studentData = storage.getStudentData();
-    if (!studentData) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // Update local storage
-      storage.updateContactInfo(formData);
-
-      // Save to Supabase
-      const { error: studentError } = await supabase
-        .from('students')
-        .upsert({
-          id: studentData.uuid,
-          student_name: formData.studentName,
-          parent_email: formData.parentEmail,
-          parent_whatsapp: formData.parentWhatsapp,
-          overall_status: 'contact_submitted',
-          submission_timestamp: new Date().toISOString(),
-        });
-
-      if (studentError) throw studentError;
-
-      // Trigger webhook for Make.com to generate LLM career report
-      const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
-      if (webhookUrl) {
-        console.log('[ContactModal] Triggering webhook for LLM report generation');
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            studentId: studentData.uuid,
-            studentName: formData.studentName,
-            parentEmail: formData.parentEmail,
-            parentWhatsapp: formData.parentWhatsapp,
-            completedTests: TEST_ORDER,
-            timestamp: new Date().toISOString(),
-          }),
-        });
-      }
-
-      // Navigate to next steps page where LLM report will be generated/displayed
-      console.log('[ContactModal] Contact info submitted, navigating to next steps');
-      navigate('/next-steps');
-    } catch (error) {
-      console.error('Error submitting contact information:', error);
-      alert('There was an error submitting your information. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (isSubmitting) {
@@ -337,13 +274,6 @@ export const Test: React.FC<TestPageProps> = ({
           </div>
         </div>
       )}
-
-      <ContactModal
-        isOpen={showContactModal && !isSubmitting}
-        onSubmit={handleContactSubmit}
-        isDismissable={false}
-        isCareerReport={true}
-      />
     </div>
   );
 };
