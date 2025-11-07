@@ -14,6 +14,13 @@ export type OverallStatus =
   | 'call_done'
   | 'converted';
 
+export type ReportStatus =
+  | 'tests_not_complete'
+  | 'ready_to_generate'
+  | 'generation_in_progress'
+  | 'done'
+  | 'error';
+
 export interface TestInfo {
   id: TestName;
   title: string;
@@ -86,6 +93,10 @@ export interface StudentWithTests {
   parent_whatsapp: string | null;
   overall_status: OverallStatus;
   report_generated: boolean;
+  report_status: ReportStatus;
+  report_generated_by: string | null;
+  report_generated_at: string | null;
+  report_error_message: string | null;
   created_at: string;
   updated_at: string;
   submission_timestamp: string | null;
