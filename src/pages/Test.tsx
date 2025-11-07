@@ -73,6 +73,8 @@ export const Test: React.FC<TestPageProps> = ({
             test_status: 'in_progress',
             result_data: {},
             completed_at: null,
+          }, {
+            onConflict: 'student_id,test_name'
           });
         } catch (error) {
           console.error('Error creating test_results record:', error);
@@ -159,6 +161,8 @@ export const Test: React.FC<TestPageProps> = ({
         test_status: 'completed',
         result_data: evaluation,
         completed_at: new Date().toISOString(),
+      }, {
+        onConflict: 'student_id,test_name'
       });
 
       if (resultsError) {
