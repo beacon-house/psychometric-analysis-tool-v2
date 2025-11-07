@@ -111,3 +111,44 @@ export interface AdminUser {
   id: string;
   email: string;
 }
+
+// Report Generation Types
+export type ReportSectionType =
+  | 'student_type'
+  | 'test_16p'
+  | 'test_high5'
+  | 'test_big5'
+  | 'test_riasec'
+  | 'domain_business'
+  | 'domain_economics'
+  | 'domain_interdisciplinary'
+  | 'domain_stem'
+  | 'domain_liberal_arts'
+  | 'final_summary';
+
+export interface ReportSection {
+  id: string;
+  student_id: string;
+  section_type: ReportSectionType;
+  content: any;
+  generated_at: string;
+  tokens_used: number;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormattedTestData {
+  test16Personalities?: any;
+  testHigh5?: any;
+  testBigFive?: any;
+  testRiasec?: any;
+}
+
+export interface ReportGenerationResponse {
+  success: boolean;
+  message: string;
+  sections_generated?: number;
+  total_tokens?: number;
+  error?: string;
+}

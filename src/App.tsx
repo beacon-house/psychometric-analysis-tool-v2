@@ -15,6 +15,7 @@ import { ResultsRIASEC } from './pages/ResultsRIASEC';
 import { NextSteps } from './pages/NextSteps';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ReportViewer } from './pages/ReportViewer';
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
         {/* Admin routes */}
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/reports/:studentId" element={<ReportViewer />} />
       </Routes>
     </BrowserRouter>
   );
