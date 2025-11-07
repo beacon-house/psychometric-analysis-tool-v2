@@ -339,19 +339,14 @@ export const ReportViewer: React.FC = () => {
       <header className="report-header">
         <div className="header-content">
           <div className="header-left">
+            <img src="/bh-ig-logo.png" alt="Logo" className="header-logo" />
             <button onClick={() => navigate('/admin/dashboard')} className="back-button-icon">
               ← Back
             </button>
-            <div>
-              <h1 className="report-title">Psychometric Report</h1>
-              <p className="student-name-header">{student.student_name}</p>
-            </div>
           </div>
-          <div className="header-right">
-            <button onClick={() => window.print()} className="print-button">
-              Print Report
-            </button>
-          </div>
+          <button onClick={() => window.print()} className="print-button">
+            Print Report
+          </button>
         </div>
       </header>
 
@@ -367,6 +362,20 @@ export const ReportViewer: React.FC = () => {
         </aside>
 
         <main className="report-content">
+          <div className="report-hero">
+            <h1 className="report-student-name">{student.student_name}</h1>
+            <p className="report-subtitle">Psychometric Assessment Report</p>
+            {student.report_generated_at && (
+              <p className="report-date">
+                Generated on {new Date(student.report_generated_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+            )}
+          </div>
+
           {sections.map((section) => {
             const category = getSectionCategory(section.section_type);
             const isFirstInCategory =
