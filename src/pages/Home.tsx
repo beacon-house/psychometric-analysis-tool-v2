@@ -144,6 +144,23 @@ export const Home: React.FC = () => {
   };
 
   const handleStartTest = (testName: TestName) => {
+    const testStatus = getTestStatus(testName);
+
+    // If test is completed, route to results page instead of test page
+    if (testStatus === 'completed') {
+      if (testName === '16Personalities') {
+        navigate('/test/16personalities/results');
+      } else if (testName === 'HIGH5') {
+        navigate('/test/high5/results');
+      } else if (testName === 'Big Five') {
+        navigate('/test/big-five/results');
+      } else if (testName === 'RIASEC') {
+        navigate('/test/riasec/results');
+      }
+      return;
+    }
+
+    // Otherwise, navigate to test page (start or continue)
     if (testName === '16Personalities') {
       navigate('/test/16personalities');
     } else if (testName === 'HIGH5') {
@@ -267,13 +284,19 @@ export const Home: React.FC = () => {
         </div>
 
         <div className="tests-grid">
-          {tests.map(test => (
-            <TestCard
-              key={test.id}
-              test={test}
-              onStart={() => handleStartTest(test.id)}
-            />
-          ))}
+          {tests.map(test => {
+            const progress = studentData?.testProgress[test.id];
+            const completedAt = progress?.completedAt;
+
+            return (
+              <TestCard
+                key={test.id}
+                test={test}
+                onStart={() => handleStartTest(test.id)}
+                completedAt={completedAt}
+              />
+            );
+          })}
         </div>
       </main>
 

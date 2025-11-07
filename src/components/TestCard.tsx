@@ -8,12 +8,22 @@ import '../styles/TestCard.css';
 interface TestCardProps {
   test: TestInfo;
   onStart: () => void;
+  completedAt?: string;
 }
 
-export const TestCard: React.FC<TestCardProps> = ({ test, onStart }) => {
+export const TestCard: React.FC<TestCardProps> = ({ test, onStart, completedAt }) => {
   const isLocked = test.status === 'locked';
   const isCompleted = test.status === 'completed';
   const isInProgress = test.status === 'in_progress';
+
+  const formatCompletionDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   const getStatusBadge = () => {
     if (isCompleted) {
@@ -53,13 +63,20 @@ export const TestCard: React.FC<TestCardProps> = ({ test, onStart }) => {
         className={`test-button ${isCompleted ? 'completed-button' : ''}`}
         onClick={onStart}
         disabled={isLocked}
+        title={isCompleted ? 'View your test results - psychometric tests cannot be retaken' : undefined}
       >
-        {isCompleted ? 'Review' : isInProgress ? 'Continue' : 'Start Test'}
+        {isCompleted ? 'View Results' : isInProgress ? 'Continue' : 'Start Test'}
       </button>
 
       {isLocked && (
         <p className="locked-message">
           Complete the first 3 tests to unlock this assessment
+        </p>
+      )}
+
+      {isCompleted && completedAt && (
+        <p className="completion-info">
+          ✓ Completed on {formatCompletionDate(completedAt)}
         </p>
       )}
     </div>
