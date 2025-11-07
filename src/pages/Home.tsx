@@ -26,12 +26,15 @@ export const Home: React.FC = () => {
 
   const [showContactModal, setShowContactModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasShownAutoPopup, setHasShownAutoPopup] = useState(false);
 
+  // Auto-popup modal once when all tests are completed (per session)
   useEffect(() => {
-    if (!isLoading && areAllTestsCompleted() && !studentData?.parentEmail) {
+    if (!isLoading && areAllTestsCompleted() && !studentData?.parentEmail && !hasShownAutoPopup) {
       setShowContactModal(true);
+      setHasShownAutoPopup(true);
     }
-  }, [isLoading, studentData, areAllTestsCompleted]);
+  }, [isLoading, studentData, areAllTestsCompleted, hasShownAutoPopup]);
 
   const getTestStatus = (testName: TestName): TestStatus => {
     if (!studentData) return 'available';
@@ -196,7 +199,7 @@ export const Home: React.FC = () => {
 
       setShowContactModal(false);
       alert(
-        `Thank you! Your reports will be sent to ${formData.parentEmail} and ${formData.parentWhatsapp} shortly.`
+        'Your Report Will be generated, book a FREE session with a counsellor, to go through your customised career report.'
       );
     } catch (error) {
       console.error('Error submitting contact information:', error);
@@ -232,6 +235,17 @@ export const Home: React.FC = () => {
         </div>
 
         <ProgressIndicator completed={completedCount} total={4} />
+
+        {areAllTestsCompleted() && !studentData?.parentEmail && (
+          <div className="career-recommendations-section">
+            <button
+              className="career-recommendations-button"
+              onClick={() => setShowContactModal(true)}
+            >
+              Get Your Personalised Career Recommendations
+            </button>
+          </div>
+        )}
 
         <div className="ux-testing-section">
           <p className="ux-testing-label">UX Testing Tools (Temporary - Will be removed before launch)</p>

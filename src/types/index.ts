@@ -77,3 +77,26 @@ export interface TestResponse {
   created_at: string;
   updated_at: string;
 }
+
+// Admin Dashboard Types
+export interface StudentWithTests {
+  id: string;
+  student_name: string | null;
+  parent_email: string | null;
+  parent_whatsapp: string | null;
+  overall_status: OverallStatus;
+  report_generated: boolean;
+  created_at: string;
+  updated_at: string;
+  submission_timestamp: string | null;
+  test_16personalities: TestStatus;
+  test_high5: TestStatus;
+  test_big_five: TestStatus;
+  test_riasec: TestStatus;
+  all_tests_completed: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+}
