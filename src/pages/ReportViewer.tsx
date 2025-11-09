@@ -102,16 +102,16 @@ export const ReportViewer: React.FC = () => {
   const getSectionTitle = (type: ReportSectionType): string => {
     const titles: Record<ReportSectionType, string> = {
       student_type: 'Student Type Classification',
-      test_16p: '1.1 16 Personalities Test',
-      test_high5: '1.2 HIGH5 Strengths Test',
-      test_big5: '1.3 Big Five Personality Test',
-      test_riasec: '1.4 RIASEC Career Interest Test',
+      test_16p: '16 Personalities Test',
+      test_high5: 'HIGH5 Strengths Test',
+      test_big5: 'Big Five Personality Test',
+      test_riasec: 'RIASEC Career Interest Test',
       core_identity_summary: 'Core Identity Summary',
-      domain_stem: '3.1 STEM & Applied Sciences',
-      domain_biology: '3.2 Biology & Natural Sciences',
-      domain_liberal_arts: '3.3 Liberal Arts & Communications',
-      domain_business: '3.4 Business & Economics',
-      domain_interdisciplinary: '3.5 Interdisciplinary Systems Fields',
+      domain_stem: 'STEM & Applied Sciences',
+      domain_biology: 'Biology & Natural Sciences',
+      domain_liberal_arts: 'Liberal Arts & Communications',
+      domain_business: 'Business & Economics',
+      domain_interdisciplinary: 'Interdisciplinary Systems Fields',
       final_summary: 'Overall Insight',
       overall_insight: 'Overall Insight',
     };
@@ -122,18 +122,6 @@ export const ReportViewer: React.FC = () => {
     <div className="section-content student-type-content">
       <div className="classification-box">
         <p className="classification-text">{content.classification}</p>
-      </div>
-      <div className="characteristics-box">
-        <h4>Key Characteristics</h4>
-        <ul className="characteristics-list">
-          {content.keyCharacteristics?.map((char: string, idx: number) => (
-            <li key={idx}>{char}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="orientation-box">
-        <h4>Overall Orientation</h4>
-        <p className="orientation-text">{content.orientation}</p>
       </div>
     </div>
   );
@@ -252,7 +240,7 @@ export const ReportViewer: React.FC = () => {
 
   const renderDomainAnalysis = (content: any) => (
     <div className="section-content domain-content">
-      <div className="domain-section">
+      <div className="domain-section relatively-stronger-areas">
         <h4>Relatively Stronger Areas</h4>
         <ul className="areas-list-bullets">
           {content.strongerAreas?.map((area: any, idx: number) => (
@@ -262,8 +250,8 @@ export const ReportViewer: React.FC = () => {
           ))}
         </ul>
       </div>
-      <div className="domain-section">
-        <h4>Areas to Explore</h4>
+      <div className="domain-section explore-with-caution-areas">
+        <h4>Explore with Caution</h4>
         <ul className="areas-list-bullets">
           {content.weakerAreas?.map((area: any, idx: number) => (
             <li key={idx}>
@@ -274,6 +262,11 @@ export const ReportViewer: React.FC = () => {
       </div>
     </div>
   );
+
+  // Helper function to parse markdown bold into HTML
+  const parseMarkdownBold = (text: string): string => {
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  };
 
   const renderCoreIdentitySummary = (content: any) => (
     <div className="section-content core-identity-content">
@@ -312,7 +305,7 @@ export const ReportViewer: React.FC = () => {
           <h4>Strengths & Pathways</h4>
           <ul className="pathways-list">
             {content.strengthsPathways.map((pathway: string, idx: number) => (
-              <li key={idx} dangerouslySetInnerHTML={{ __html: pathway }} />
+              <li key={idx} dangerouslySetInnerHTML={{ __html: parseMarkdownBold(pathway) }} />
             ))}
           </ul>
         </div>

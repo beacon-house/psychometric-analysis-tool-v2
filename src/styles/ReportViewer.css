@@ -448,6 +448,21 @@
   gap: 2rem;
 }
 
+.domain-section {
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+}
+
+.relatively-stronger-areas {
+  background-color: #F0FDF4;
+  border-left: 4px solid #10B981;
+}
+
+.explore-with-caution-areas {
+  background-color: #FFFBEB;
+  border-left: 4px solid #F59E0B;
+}
+
 .domain-section h4 {
   font-size: 1rem;
   font-weight: 700;

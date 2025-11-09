@@ -505,7 +505,7 @@ Based on the student's test results, provide:
 1. **Relatively Stronger Areas**: List 3-7 specific majors/fields with brief evidence-based rationale (10-15 words each)
    Format: "**Field Name** – brief rationale citing specific test evidence"
 
-2. **Areas to Explore**: List 3-6 specific majors/fields with brief explanation of gaps (10-15 words each)
+2. **Explore with Caution**: List 3-6 specific majors/fields with brief explanation of gaps (10-15 words each)
    Format: "**Field Name** – brief rationale explaining why it's a weaker fit"
 
 CRITICAL REQUIREMENTS:
