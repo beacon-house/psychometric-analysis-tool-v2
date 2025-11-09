@@ -77,6 +77,7 @@ export const SECTION_LABELS: Record<ReportSectionType, string> = {
   domain_stem: 'STEM & Applied Sciences Analysis',
   domain_liberal_arts: 'Liberal Arts & Communications Analysis',
   final_summary: 'Comprehensive Summary',
+  overall_insight: 'Comprehensive Summary',
 };
 
 export const SECTION_CATEGORIES = {
@@ -89,5 +90,5 @@ export const SECTION_CATEGORIES = {
     'domain_stem',
     'domain_liberal_arts',
   ] as ReportSectionType[],
-  'Final Summary': ['final_summary'] as ReportSectionType[],
+  'Final Summary': ['overall_insight'] as ReportSectionType[],
 };

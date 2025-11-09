@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, isAuthenticated } from '../lib/supabase';
 import { regenerateReportSections, SECTION_LABELS, SECTION_CATEGORIES } from '../lib/reportRegeneration';
+import { RegenerationLoadingModal } from '../components/RegenerationLoadingModal';
 import type { ReportSection, ReportSectionType } from '../types';
 import '../styles/ReportViewer.css';
 
@@ -23,7 +24,6 @@ export const ReportViewer: React.FC = () => {
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [selectedSections, setSelectedSections] = useState<ReportSectionType[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
-  const [regenerationProgress, setRegenerationProgress] = useState('');
 
   useEffect(() => {
     checkAuthAndLoadReport();
@@ -89,6 +89,7 @@ export const ReportViewer: React.FC = () => {
       'domain_interdisciplinary',
       'domain_stem',
       'domain_liberal_arts',
+      'overall_insight',
       'final_summary',
     ];
 
@@ -110,6 +111,7 @@ export const ReportViewer: React.FC = () => {
       domain_stem: 'STEM & Applied Sciences',
       domain_liberal_arts: 'Liberal Arts & Communications',
       final_summary: 'Comprehensive Summary',
+      overall_insight: 'Comprehensive Summary',
     };
     return titles[type];
   };
@@ -310,7 +312,7 @@ export const ReportViewer: React.FC = () => {
       return renderTestSummary(content);
     } else if (section.section_type.startsWith('domain_')) {
       return renderDomainAnalysis(content);
-    } else if (section.section_type === 'final_summary') {
+    } else if (section.section_type === 'final_summary' || section.section_type === 'overall_insight') {
       return renderFinalSummary(content);
     }
 
@@ -321,7 +323,7 @@ export const ReportViewer: React.FC = () => {
     if (type === 'student_type') return 'Section 1: Student Profile';
     if (type.startsWith('test_')) return 'Section 1: Test Summaries';
     if (type.startsWith('domain_')) return 'Section 2: Career Pathway Alignment';
-    if (type === 'final_summary') return 'Section 3: Comprehensive Summary';
+    if (type === 'final_summary' || type === 'overall_insight') return 'Section 3: Comprehensive Summary';
     return '';
   };
 
@@ -381,13 +383,11 @@ export const ReportViewer: React.FC = () => {
     if (!confirmation) return;
 
     setIsRegenerating(true);
-    setRegenerationProgress(`Regenerating ${selectedSections.length} section(s)...`);
 
     try {
       const result = await regenerateReportSections(studentId!, selectedSections);
 
       if (result.success) {
-        setRegenerationProgress('Regeneration complete! Reloading report...');
         await loadReport();
         setShowRegenerateModal(false);
         setSelectedSections([]);
@@ -400,7 +400,6 @@ export const ReportViewer: React.FC = () => {
       alert(`Failed to regenerate sections: ${err.message}`);
     } finally {
       setIsRegenerating(false);
-      setRegenerationProgress('');
     }
   };
 
@@ -502,90 +501,84 @@ export const ReportViewer: React.FC = () => {
         </main>
       </div>
 
-      {showRegenerateModal && (
-        <div className="modal-overlay" onClick={() => !isRegenerating && setShowRegenerateModal(false)}>
+      {isRegenerating && (
+        <RegenerationLoadingModal
+          sectionsCount={selectedSections.length}
+        />
+      )}
+
+      {showRegenerateModal && !isRegenerating && (
+        <div className="modal-overlay" onClick={() => setShowRegenerateModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Regenerate Report Sections</h2>
               <button
                 className="modal-close"
                 onClick={() => setShowRegenerateModal(false)}
-                disabled={isRegenerating}
               >
                 ×
               </button>
             </div>
 
             <div className="modal-body">
-              {isRegenerating ? (
-                <div className="regeneration-progress">
-                  <div className="loading-spinner"></div>
-                  <p>{regenerationProgress}</p>
-                </div>
-              ) : (
-                <>
-                  <p className="modal-description">
-                    Select the sections you want to regenerate. The AI will create new content based on the student's test results.
-                  </p>
+              <p className="modal-description">
+                Select the sections you want to regenerate. The AI will create new content based on the student's test results.
+              </p>
 
-                  <div className="select-all-row">
+              <div className="select-all-row">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={selectedSections.length === Object.values(SECTION_CATEGORIES).flat().length}
+                    onChange={handleSelectAll}
+                  />
+                  <strong>Select All Sections</strong>
+                </label>
+              </div>
+
+              {Object.entries(SECTION_CATEGORIES).map(([category, categorySections]) => (
+                <div key={category} className="section-category">
+                  <div className="category-header-modal">
                     <label>
                       <input
                         type="checkbox"
-                        checked={selectedSections.length === Object.values(SECTION_CATEGORIES).flat().length}
-                        onChange={handleSelectAll}
+                        checked={categorySections.every(s => selectedSections.includes(s))}
+                        onChange={() => handleToggleCategory(category)}
                       />
-                      <strong>Select All Sections</strong>
+                      <strong>{category}</strong>
                     </label>
                   </div>
-
-                  {Object.entries(SECTION_CATEGORIES).map(([category, categorySections]) => (
-                    <div key={category} className="section-category">
-                      <div className="category-header-modal">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={categorySections.every(s => selectedSections.includes(s))}
-                            onChange={() => handleToggleCategory(category)}
-                          />
-                          <strong>{category}</strong>
-                        </label>
-                      </div>
-                      <div className="category-sections">
-                        {categorySections.map(sectionType => (
-                          <label key={sectionType} className="section-checkbox">
-                            <input
-                              type="checkbox"
-                              checked={selectedSections.includes(sectionType)}
-                              onChange={() => handleToggleSection(sectionType)}
-                            />
-                            {SECTION_LABELS[sectionType]}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
+                  <div className="category-sections">
+                    {categorySections.map(sectionType => (
+                      <label key={sectionType} className="section-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={selectedSections.includes(sectionType)}
+                          onChange={() => handleToggleSection(sectionType)}
+                        />
+                        {SECTION_LABELS[sectionType]}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {!isRegenerating && (
-              <div className="modal-footer">
-                <button
-                  className="modal-button cancel-button"
-                  onClick={() => setShowRegenerateModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="modal-button confirm-button"
-                  onClick={handleRegenerateConfirm}
-                  disabled={selectedSections.length === 0}
-                >
-                  Regenerate Selected ({selectedSections.length})
-                </button>
-              </div>
-            )}
+            <div className="modal-footer">
+              <button
+                className="modal-button cancel-button"
+                onClick={() => setShowRegenerateModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-button confirm-button"
+                onClick={handleRegenerateConfirm}
+                disabled={selectedSections.length === 0}
+              >
+                Regenerate Selected ({selectedSections.length})
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -124,7 +124,8 @@ export type ReportSectionType =
   | 'domain_interdisciplinary'
   | 'domain_stem'
   | 'domain_liberal_arts'
-  | 'final_summary';
+  | 'final_summary'
+  | 'overall_insight';
 
 export interface ReportSection {
   id: string;
