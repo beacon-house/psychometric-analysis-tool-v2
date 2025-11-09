@@ -119,11 +119,12 @@ export type ReportSectionType =
   | 'test_high5'
   | 'test_big5'
   | 'test_riasec'
-  | 'domain_business'
-  | 'domain_economics'
-  | 'domain_interdisciplinary'
+  | 'core_identity_summary'
   | 'domain_stem'
+  | 'domain_biology'
   | 'domain_liberal_arts'
+  | 'domain_business'
+  | 'domain_interdisciplinary'
   | 'final_summary'
   | 'overall_insight';
 

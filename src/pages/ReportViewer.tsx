@@ -84,11 +84,12 @@ export const ReportViewer: React.FC = () => {
       'test_high5',
       'test_big5',
       'test_riasec',
-      'domain_business',
-      'domain_economics',
-      'domain_interdisciplinary',
+      'core_identity_summary',
       'domain_stem',
+      'domain_biology',
       'domain_liberal_arts',
+      'domain_business',
+      'domain_interdisciplinary',
       'overall_insight',
       'final_summary',
     ];
@@ -101,17 +102,18 @@ export const ReportViewer: React.FC = () => {
   const getSectionTitle = (type: ReportSectionType): string => {
     const titles: Record<ReportSectionType, string> = {
       student_type: 'Student Type Classification',
-      test_16p: '16 Personalities Test Summary',
-      test_high5: 'HIGH5 Strengths Test Summary',
-      test_big5: 'Big Five Personality Test Summary',
-      test_riasec: 'RIASEC Career Interest Test Summary',
-      domain_business: 'Business Management & Leadership',
-      domain_economics: 'Economics & Finance',
-      domain_interdisciplinary: 'Interdisciplinary Systems Fields',
-      domain_stem: 'STEM & Applied Sciences',
-      domain_liberal_arts: 'Liberal Arts & Communications',
-      final_summary: 'Comprehensive Summary',
-      overall_insight: 'Comprehensive Summary',
+      test_16p: '1.1 16 Personalities Test',
+      test_high5: '1.2 HIGH5 Strengths Test',
+      test_big5: '1.3 Big Five Personality Test',
+      test_riasec: '1.4 RIASEC Career Interest Test',
+      core_identity_summary: 'Core Identity Summary',
+      domain_stem: '3.1 STEM & Applied Sciences',
+      domain_biology: '3.2 Biology & Natural Sciences',
+      domain_liberal_arts: '3.3 Liberal Arts & Communications',
+      domain_business: '3.4 Business & Economics',
+      domain_interdisciplinary: '3.5 Interdisciplinary Systems Fields',
+      final_summary: 'Overall Insight',
+      overall_insight: 'Overall Insight',
     };
     return titles[type];
   };
@@ -150,11 +152,6 @@ export const ReportViewer: React.FC = () => {
               <strong>Personality Type:</strong> {content.results.personalityType}
             </p>
           )}
-          {content.results?.hollandCode && (
-            <p className="holland-code">
-              <strong>Holland Code:</strong> {content.results.hollandCode}
-            </p>
-          )}
           {content.results?.dimensions && (
             <table className="results-table">
               <thead>
@@ -169,25 +166,33 @@ export const ReportViewer: React.FC = () => {
                   <tr key={idx}>
                     <td>{dim.name}</td>
                     <td>{dim.score}</td>
-                    <td>{dim.preference}</td>
+                    <td>{dim.preference || dim.interpretation}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
           {content.results?.topFive && (
-            <div className="top-five-list">
-              {content.results.topFive.map((strength: any, idx: number) => (
-                <div key={idx} className="strength-item">
-                  <span className="strength-rank">{strength.rank}.</span>
-                  <span className="strength-name">{strength.strength}</span>
-                  <span className="strength-domain">({strength.domain})</span>
-                  {strength.description && (
-                    <p className="strength-description">{strength.description}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Strength</th>
+                  <th>Domain</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {content.results.topFive.map((strength: any, idx: number) => (
+                  <tr key={idx}>
+                    <td>{strength.rank}</td>
+                    <td><strong>{strength.strength}</strong></td>
+                    <td>{strength.domain}</td>
+                    <td>{strength.interpretation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
           {content.results?.traits && (
             <table className="results-table">
@@ -202,15 +207,20 @@ export const ReportViewer: React.FC = () => {
                 {content.results.traits.map((trait: any, idx: number) => (
                   <tr key={idx}>
                     <td>{trait.name}</td>
-                    <td>{trait.percentile}%</td>
-                    <td>{trait.level}</td>
+                    <td>{trait.percentile || trait.score}</td>
+                    <td>{trait.level || trait.interpretation}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
           {content.results?.allThemes && (
-            <div className="all-themes-list">
+            <div className="all-themes-section">
+              {content.results.hollandCode && (
+                <p className="holland-code-display">
+                  <strong>Holland Code:</strong> {content.results.hollandCode}
+                </p>
+              )}
               <table className="results-table">
                 <thead>
                   <tr>
@@ -223,7 +233,7 @@ export const ReportViewer: React.FC = () => {
                   {content.results.allThemes.map((theme: any, idx: number) => (
                     <tr key={idx}>
                       <td><strong>{theme.theme}</strong></td>
-                      <td>{theme.score}/32</td>
+                      <td>{theme.score}</td>
                       <td>{theme.interpretation}</td>
                     </tr>
                   ))}
@@ -243,58 +253,90 @@ export const ReportViewer: React.FC = () => {
   const renderDomainAnalysis = (content: any) => (
     <div className="section-content domain-content">
       <div className="domain-section">
-        <h4>Overall Fit Assessment</h4>
-        <p>{content.fitAssessment}</p>
-      </div>
-      <div className="domain-section">
         <h4>Relatively Stronger Areas</h4>
-        <div className="areas-list">
+        <ul className="areas-list-bullets">
           {content.strongerAreas?.map((area: any, idx: number) => (
-            <div key={idx} className="area-item">
-              <h5>{area.area}</h5>
-              <p>{area.rationale}</p>
-            </div>
+            <li key={idx}>
+              <strong>{area.field}</strong> – {area.rationale}
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
       <div className="domain-section">
         <h4>Areas to Explore</h4>
-        <div className="areas-list">
-          {content.areasToExplore?.map((area: any, idx: number) => (
-            <div key={idx} className="area-item">
-              <h5>{area.area}</h5>
-              <p>{area.rationale}</p>
-            </div>
+        <ul className="areas-list-bullets">
+          {content.weakerAreas?.map((area: any, idx: number) => (
+            <li key={idx}>
+              <strong>{area.field}</strong> – {area.rationale}
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );
 
-  const renderFinalSummary = (content: any) => (
-    <div className="section-content summary-content">
-      <div className="summary-section">
-        <h4>Core Identity</h4>
-        <p className="narrative-text">{content.coreIdentity}</p>
-      </div>
-      <div className="summary-section">
-        <h4>Career Pathway Recommendations</h4>
-        <p className="narrative-text">{content.careerRecommendations}</p>
-      </div>
-      <div className="summary-section">
-        <h4>Actionable Next Steps</h4>
-        <div className="next-steps-list">
-          {content.nextSteps?.map((step: any, idx: number) => (
-            <div key={idx} className="next-step-item">
-              <div className="step-number">{idx + 1}</div>
-              <div className="step-content">
-                <h5>{step.step}</h5>
-                <p>{step.rationale}</p>
-              </div>
-            </div>
-          ))}
+  const renderCoreIdentitySummary = (content: any) => (
+    <div className="section-content core-identity-content">
+      {content.coreIdentity && (
+        <div className="core-identity-section">
+          <table className="core-identity-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Key Characteristics</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Core Drive</strong></td>
+                <td>{content.coreIdentity.coreDrive}</td>
+              </tr>
+              <tr>
+                <td><strong>Personality</strong></td>
+                <td>{content.coreIdentity.personality}</td>
+              </tr>
+              <tr>
+                <td><strong>Work Style</strong></td>
+                <td>{content.coreIdentity.workStyle}</td>
+              </tr>
+              <tr>
+                <td><strong>Learning Style</strong></td>
+                <td>{content.coreIdentity.learningStyle}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
+      {content.strengthsPathways && content.strengthsPathways.length > 0 && (
+        <div className="strengths-pathways-section">
+          <h4>Strengths & Pathways</h4>
+          <ul className="pathways-list">
+            {content.strengthsPathways.map((pathway: string, idx: number) => (
+              <li key={idx} dangerouslySetInnerHTML={{ __html: pathway }} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderOverallInsight = (content: any) => (
+    <div className="section-content summary-content">
+      {content.overallInsight && (
+        <div className="summary-section">
+          <p className="narrative-text">{content.overallInsight}</p>
+        </div>
+      )}
+      {content.potentialMajors && content.potentialMajors.length > 0 && (
+        <div className="summary-section">
+          <h4>Potential Majors</h4>
+          <ul className="majors-list">
+            {content.potentialMajors.map((major: string, idx: number) => (
+              <li key={idx}>{major}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 
@@ -303,27 +345,25 @@ export const ReportViewer: React.FC = () => {
 
     if (section.section_type === 'student_type') {
       return renderStudentType(content);
-    } else if (
-      section.section_type.startsWith('test_') &&
-      section.section_type !== 'test_riasec'
-    ) {
+    } else if (section.section_type.startsWith('test_')) {
       return renderTestSummary(content);
-    } else if (section.section_type === 'test_riasec') {
-      return renderTestSummary(content);
+    } else if (section.section_type === 'core_identity_summary') {
+      return renderCoreIdentitySummary(content);
     } else if (section.section_type.startsWith('domain_')) {
       return renderDomainAnalysis(content);
     } else if (section.section_type === 'final_summary' || section.section_type === 'overall_insight') {
-      return renderFinalSummary(content);
+      return renderOverallInsight(content);
     }
 
     return <div className="section-content">No content available</div>;
   };
 
   const getSectionCategory = (type: ReportSectionType): string => {
-    if (type === 'student_type') return 'Section 1: Student Profile';
-    if (type.startsWith('test_')) return 'Section 1: Test Summaries';
-    if (type.startsWith('domain_')) return 'Section 2: Career Pathway Alignment';
-    if (type === 'final_summary' || type === 'overall_insight') return 'Section 3: Comprehensive Summary';
+    if (type === 'student_type') return 'Student Type';
+    if (type.startsWith('test_')) return 'Section 1: Individual Test Summaries';
+    if (type === 'core_identity_summary') return 'Section 2: Core Identity Summary';
+    if (type.startsWith('domain_')) return 'Section 3: Career Pathway Alignment';
+    if (type === 'final_summary' || type === 'overall_insight') return 'Section 4: Overall Insight';
     return '';
   };
 
@@ -454,9 +494,10 @@ export const ReportViewer: React.FC = () => {
           <h3>Contents</h3>
           <nav>
             <a href="#section-student-type">Student Type</a>
-            <a href="#section-test-summaries">Test Summaries</a>
-            <a href="#section-career-domains">Career Domains</a>
-            <a href="#section-summary">Final Summary</a>
+            <a href="#section-test">Section 1: Test Summaries</a>
+            <a href="#section-core">Section 2: Core Identity</a>
+            <a href="#section-domain">Section 3: Career Pathways</a>
+            <a href="#section-overall">Section 4: Overall Insight</a>
           </nav>
         </aside>
 
