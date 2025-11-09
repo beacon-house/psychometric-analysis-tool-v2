@@ -122,6 +122,8 @@ Deno.serve(async (req: Request) => {
           content: content,
           tokens_used: tokensUsed,
           generated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'student_id,section_type'
         });
 
       if (upsertError) {
@@ -164,13 +166,20 @@ Deno.serve(async (req: Request) => {
 
       totalTokens += finalTokens;
 
-      await supabase.from("report_sections").upsert({
+      const { error: finalUpsertError } = await supabase.from("report_sections").upsert({
         student_id: studentId,
         section_type: "final_summary",
         content: finalContent,
         tokens_used: finalTokens,
         generated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'student_id,section_type'
       });
+
+      if (finalUpsertError) {
+        console.error('Error saving final summary:', finalUpsertError);
+        throw new Error('Failed to save section final_summary');
+      }
 
       regeneratedSections.push({ type: 'final_summary', content: finalContent });
     }
