@@ -547,7 +547,7 @@ export const ReportViewer: React.FC = () => {
 
         <main className="report-content">
           <div className="report-hero">
-            <h1 className="report-student-name print-only">{student.student_name}</h1>
+            <h1 className="report-student-name">{student.student_name}</h1>
             <p className="report-subtitle">Psychometric Assessment Report</p>
             {student.report_generated_at && (
               <p className="report-date">
