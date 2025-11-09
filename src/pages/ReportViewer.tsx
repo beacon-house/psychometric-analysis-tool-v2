@@ -24,10 +24,41 @@ export const ReportViewer: React.FC = () => {
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [selectedSections, setSelectedSections] = useState<ReportSectionType[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
 
   useEffect(() => {
     checkAuthAndLoadReport();
   }, [studentId]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = document.querySelectorAll('.report-section, .category-header');
+      const scrollPosition = window.scrollY + 150;
+
+      let currentSection = '';
+
+      sections.forEach((section) => {
+        const sectionTop = (section as HTMLElement).offsetTop;
+        const sectionHeight = (section as HTMLElement).offsetHeight;
+
+        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+          const sectionId = section.id || section.getAttribute('data-section-id') || '';
+          if (sectionId) {
+            currentSection = sectionId;
+          }
+        }
+      });
+
+      if (currentSection && currentSection !== activeSection) {
+        setActiveSection(currentSection);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection, sections]);
 
   const checkAuthAndLoadReport = async () => {
     try {
@@ -470,14 +501,10 @@ export const ReportViewer: React.FC = () => {
               ← Back
             </button>
           </div>
-          <div className="header-actions">
-            <button onClick={handleRegenerateClick} className="regenerate-button">
-              Regenerate
-            </button>
-            <button onClick={() => window.print()} className="print-button">
-              Print Report
-            </button>
+          <div className="header-center">
+            <h1 className="header-student-name">{student.student_name}</h1>
           </div>
+          <div className="header-spacer"></div>
         </div>
       </header>
 
@@ -485,11 +512,36 @@ export const ReportViewer: React.FC = () => {
         <aside className="report-toc">
           <h3>Contents</h3>
           <nav>
-            <a href="#section-student-type">Student Type</a>
-            <a href="#section-test">Section 1: Test Summaries</a>
-            <a href="#section-core">Section 2: Core Identity</a>
-            <a href="#section-domain">Section 3: Career Pathways</a>
-            <a href="#section-overall">Section 4: Overall Insight</a>
+            <a
+              href="#section-student"
+              className={activeSection === 'section-student' ? 'active' : ''}
+            >
+              Student Type
+            </a>
+            <a
+              href="#section-test"
+              className={activeSection === 'section-test' ? 'active' : ''}
+            >
+              Section 1: Test Summaries
+            </a>
+            <a
+              href="#section-core"
+              className={activeSection === 'section-core' ? 'active' : ''}
+            >
+              Section 2: Core Identity
+            </a>
+            <a
+              href="#section-domain"
+              className={activeSection === 'section-domain' ? 'active' : ''}
+            >
+              Section 3: Career Pathways
+            </a>
+            <a
+              href="#section-overall"
+              className={activeSection === 'section-overall' ? 'active' : ''}
+            >
+              Section 4: Overall Insight
+            </a>
           </nav>
         </aside>
 
@@ -506,6 +558,20 @@ export const ReportViewer: React.FC = () => {
                 })}
               </p>
             )}
+            <div className="report-actions">
+              <button onClick={handleRegenerateClick} className="action-button regenerate-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                </svg>
+                Regenerate Sections
+              </button>
+              <button onClick={() => window.print()} className="action-button print-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                </svg>
+                Print Report
+              </button>
+            </div>
           </div>
 
           {sections.map((section) => {
@@ -520,6 +586,7 @@ export const ReportViewer: React.FC = () => {
                   <div
                     className="category-header"
                     id={`section-${section.section_type.split('_')[0]}`}
+                    data-section-id={`section-${section.section_type.split('_')[0]}`}
                   >
                     <h2>{category}</h2>
                   </div>
