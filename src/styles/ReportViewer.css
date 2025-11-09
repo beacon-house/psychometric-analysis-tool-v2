@@ -286,16 +286,21 @@
 }
 
 .category-header {
-  margin: 2rem 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 3px solid #3B82F6;
+  margin: 3rem 0 2rem 0;
+  padding: 1.25rem 2rem;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.15);
+  text-align: center;
 }
 
 .category-header h2 {
-  font-size: 1.75rem;
+  font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: white;
   margin: 0;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .report-section {
@@ -654,9 +659,13 @@
     display: none;
   }
 
-  .report-student-name {
-    display: block !important;
-    margin-bottom: 1rem !important;
+  .student-name-card {
+    position: static;
+    display: block;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 1rem;
   }
 
   .report-toc {
