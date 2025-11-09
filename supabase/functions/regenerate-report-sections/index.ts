@@ -19,6 +19,19 @@ interface FormattedTestData {
   testRiasec: any;
 }
 
+type SectionType =
+  | 'student_type'
+  | 'test_16p'
+  | 'test_high5'
+  | 'test_big5'
+  | 'test_riasec'
+  | 'domain_business'
+  | 'domain_economics'
+  | 'domain_interdisciplinary'
+  | 'domain_stem'
+  | 'domain_liberal_arts'
+  | 'final_summary';
+
 const GPT_MODEL = "gpt-4o-2024-08-06";
 
 Deno.serve(async (req: Request) => {
@@ -30,11 +43,14 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { studentId, counselorEmail } = await req.json();
+    const { studentId, counselorEmail, sectionsToRegenerate } = await req.json();
 
-    if (!studentId) {
+    if (!studentId || !sectionsToRegenerate || !Array.isArray(sectionsToRegenerate)) {
       return new Response(
-        JSON.stringify({ success: false, error: "Student ID is required" }),
+        JSON.stringify({
+          success: false,
+          error: "Student ID and sections to regenerate are required"
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -48,7 +64,8 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log(`Starting report generation for student: ${studentId}`);
+    console.log(`Regenerating report sections for student: ${studentId}`);
+    console.log(`Sections to regenerate: ${sectionsToRegenerate.join(', ')}`);
 
     const { data: testResults, error: testError } = await supabase
       .from("test_results")
@@ -67,7 +84,7 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "All four tests must be completed before generating report",
+          error: "All four tests must be completed",
         }),
         {
           status: 400,
@@ -80,86 +97,94 @@ Deno.serve(async (req: Request) => {
     const testDataSummary = createTestDataSummary(formattedData);
 
     let totalTokens = 0;
-    const generatedSections: any[] = [];
+    const regeneratedSections: any[] = [];
 
-    const sections = [
-      { type: "student_type", prompt: getStudentTypePrompt(testDataSummary) },
-      { type: "test_16p", prompt: getTest16PPrompt(testDataSummary) },
-      { type: "test_high5", prompt: getTestHigh5Prompt(testDataSummary) },
-      { type: "test_big5", prompt: getTestBig5Prompt(testDataSummary) },
-      { type: "test_riasec", prompt: getTestRiasecPrompt(testDataSummary) },
-      {
-        type: "domain_business",
-        prompt: getDomainPrompt("business", testDataSummary),
-      },
-      {
-        type: "domain_economics",
-        prompt: getDomainPrompt("economics", testDataSummary),
-      },
-      {
-        type: "domain_interdisciplinary",
-        prompt: getDomainPrompt("interdisciplinary", testDataSummary),
-      },
-      { type: "domain_stem", prompt: getDomainPrompt("stem", testDataSummary) },
-      {
-        type: "domain_liberal_arts",
-        prompt: getDomainPrompt("liberal_arts", testDataSummary),
-      },
-    ];
+    // If final_summary is in the list, process it last
+    const hasFinalSummary = sectionsToRegenerate.includes('final_summary');
+    const sectionsWithoutFinal = sectionsToRegenerate.filter(
+      (s: SectionType) => s !== 'final_summary'
+    );
 
-    for (const section of sections) {
-      console.log(`Generating section: ${section.type}`);
+    // Regenerate regular sections
+    for (const sectionType of sectionsWithoutFinal) {
+      console.log(`Regenerating section: ${sectionType}`);
 
-      const { content, tokensUsed } = await callOpenAI(
-        section.prompt,
-        openaiApiKey
-      );
+      const prompt = getSectionPrompt(sectionType, testDataSummary);
+      const { content, tokensUsed } = await callOpenAI(prompt, openaiApiKey);
 
       totalTokens += tokensUsed;
 
-      const { error: insertError } = await supabase
+      const { error: upsertError } = await supabase
         .from("report_sections")
         .upsert({
           student_id: studentId,
-          section_type: section.type,
+          section_type: sectionType,
           content: content,
           tokens_used: tokensUsed,
           generated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'student_id,section_type'
         });
 
-      if (insertError) {
-        console.error(`Error saving section ${section.type}:`, insertError);
+      if (upsertError) {
+        console.error(`Error saving section ${sectionType}:`, upsertError);
+        throw new Error(`Failed to save section ${sectionType}`);
       }
 
-      generatedSections.push({ type: section.type, content });
+      regeneratedSections.push({ type: sectionType, content });
     }
 
-    const previousSectionsText = generatedSections
-      .map((s) => `\n## ${s.type}\n${JSON.stringify(s.content, null, 2)}`)
-      .join("\n");
+    // Regenerate final summary if requested
+    if (hasFinalSummary) {
+      console.log("Regenerating final summary");
 
-    const finalSummaryPrompt = getFinalSummaryPrompt(
-      testDataSummary,
-      previousSectionsText
-    );
+      // Fetch all current sections for context
+      const { data: allSections, error: sectionsError } = await supabase
+        .from("report_sections")
+        .select("*")
+        .eq("student_id", studentId)
+        .order("created_at", { ascending: true });
 
-    console.log("Generating final summary");
+      if (sectionsError) {
+        throw new Error(`Failed to fetch sections: ${sectionsError.message}`);
+      }
 
-    const { content: finalContent, tokensUsed: finalTokens } = await callOpenAI(
-      finalSummaryPrompt,
-      openaiApiKey
-    );
+      const previousSectionsText = (allSections || [])
+        .filter((s: any) => s.section_type !== 'final_summary')
+        .map((s: any) => `\n## ${s.section_type}\n${JSON.stringify(s.content, null, 2)}`)
+        .join("\n");
 
-    totalTokens += finalTokens;
+      const finalSummaryPrompt = getFinalSummaryPrompt(
+        testDataSummary,
+        previousSectionsText
+      );
 
-    await supabase.from("report_sections").upsert({
-      student_id: studentId,
-      section_type: "final_summary",
-      content: finalContent,
-      tokens_used: finalTokens,
-      generated_at: new Date().toISOString(),
-    });
+      const { content: finalContent, tokensUsed: finalTokens } = await callOpenAI(
+        finalSummaryPrompt,
+        openaiApiKey
+      );
 
+      totalTokens += finalTokens;
+
+      const { error: finalUpsertError } = await supabase.from("report_sections").upsert({
+        student_id: studentId,
+        section_type: "final_summary",
+        content: finalContent,
+        tokens_used: finalTokens,
+        generated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'student_id,section_type'
+      });
+
+      if (finalUpsertError) {
+        console.error('Error saving final summary:', finalUpsertError);
+        throw new Error('Failed to save section final_summary');
+      }
+
+      regeneratedSections.push({ type: 'final_summary', content: finalContent });
+    }
+
+    // Update student record
     await supabase
       .from("students")
       .update({
@@ -170,14 +195,14 @@ Deno.serve(async (req: Request) => {
       .eq("id", studentId);
 
     console.log(
-      `Report generation complete. Total tokens used: ${totalTokens}`
+      `Regeneration complete. Total tokens used: ${totalTokens}`
     );
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Report generated successfully",
-        sections_generated: 11,
+        message: "Sections regenerated successfully",
+        sections_regenerated: regeneratedSections.length,
         total_tokens: totalTokens,
       }),
       {
@@ -185,12 +210,12 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (error: any) {
-    console.error("Error generating report:", error);
+    console.error("Error regenerating sections:", error);
 
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || "Failed to generate report",
+        error: error.message || "Failed to regenerate sections",
       }),
       {
         status: 500,
@@ -301,6 +326,33 @@ function createTestDataSummary(formattedData: FormattedTestData): string {
   }
 
   return summary;
+}
+
+function getSectionPrompt(sectionType: SectionType, testData: string): string {
+  switch (sectionType) {
+    case 'student_type':
+      return getStudentTypePrompt(testData);
+    case 'test_16p':
+      return getTest16PPrompt(testData);
+    case 'test_high5':
+      return getTestHigh5Prompt(testData);
+    case 'test_big5':
+      return getTestBig5Prompt(testData);
+    case 'test_riasec':
+      return getTestRiasecPrompt(testData);
+    case 'domain_business':
+      return getDomainPrompt('business', testData);
+    case 'domain_economics':
+      return getDomainPrompt('economics', testData);
+    case 'domain_interdisciplinary':
+      return getDomainPrompt('interdisciplinary', testData);
+    case 'domain_stem':
+      return getDomainPrompt('stem', testData);
+    case 'domain_liberal_arts':
+      return getDomainPrompt('liberal_arts', testData);
+    default:
+      throw new Error(`Unknown section type: ${sectionType}`);
+  }
 }
 
 function getStudentTypePrompt(testData: string): string {
