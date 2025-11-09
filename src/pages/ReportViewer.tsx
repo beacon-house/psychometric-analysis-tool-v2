@@ -91,7 +91,6 @@ export const ReportViewer: React.FC = () => {
       'domain_business',
       'domain_interdisciplinary',
       'overall_insight',
-      'final_summary',
     ];
 
     return order
