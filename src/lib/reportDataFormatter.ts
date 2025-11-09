@@ -25,6 +25,7 @@ export interface FormattedTestResults {
     hollandCode: string;
     topThreeThemes: any[];
     allScores: any[];
+    allThemes: any[];
   } | null;
 }
 
@@ -115,10 +116,18 @@ function formatRiasecData(testResult: any) {
 
   const resultData = testResult.result_data;
 
+  // Format all 6 themes with scores and interpretations
+  const allThemes = resultData.allScores?.map((scoreObj: any) => ({
+    theme: scoreObj.theme,
+    score: scoreObj.normalizedScore,
+    interpretation: scoreObj.description
+  })) || [];
+
   return {
     hollandCode: resultData.hollandCode || 'Unknown',
     topThreeThemes: resultData.topThreeThemes || [],
     allScores: resultData.allScores || [],
+    allThemes: allThemes,
     rawScores: resultData.rawScores || {},
     normalizedScores: resultData.normalizedScores || {},
   };
@@ -193,10 +202,11 @@ export function createTestDataSummary(formattedData: FormattedTestResults): stri
   if (testRiasec) {
     summary += `### RIASEC Career Interest Test\n`;
     summary += `- Holland Code: ${testRiasec.hollandCode}\n`;
-    summary += `- Top 3 Career Themes:\n`;
-    testRiasec.topThreeThemes.forEach((theme: any) => {
-      summary += `  ${theme.rank}. ${theme.theme} - Score: ${theme.score}\n`;
+    summary += `- All 6 Career Theme Scores:\n`;
+    testRiasec.allThemes?.forEach((theme: any) => {
+      summary += `  - ${theme.theme}: Score ${theme.score}/32 - ${theme.interpretation}\n`;
     });
+    summary += `\n- Top 3 Themes (Holland Code): ${testRiasec.topThreeThemes.map((t: any) => t.theme).join(', ')}\n`;
     summary += '\n';
   }
 

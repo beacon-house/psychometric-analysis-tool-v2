@@ -142,9 +142,14 @@ Please provide a comprehensive summary with the following sections:
 1. **What This Test Measures**: Explain what the RIASEC test measures in 2-3 sentences (focus on Holland's six career interest themes)
 
 2. **Your Results**: Present the student's results showing:
-   - Holland Code (three-letter code)
-   - Top three career themes with scores
-   - Brief description of each theme
+   - Holland Code (three-letter code representing top 3 themes)
+   - ALL SIX career themes with their scores and one-line interpretations:
+     * Realistic (practical, hands-on work)
+     * Investigative (analytical, research-oriented)
+     * Artistic (creative expression)
+     * Social (helping others)
+     * Enterprising (leading and managing)
+     * Conventional (organized, detail-oriented)
 
 3. **What This Means For You**: Provide actionable insights (3-4 paragraphs) explaining:
    - Career fields and roles aligned with these interests
@@ -156,9 +161,13 @@ Format your response as structured JSON with this schema:
   "whatItMeasures": "Explanation text",
   "results": {
     "hollandCode": "Three letter code",
-    "topThemes": [
-      {"rank": 1, "theme": "Realistic", "score": 28, "description": "Brief description"},
-      ...
+    "allThemes": [
+      {"theme": "Realistic", "score": 28, "interpretation": "One-line interpretation of what this score means"},
+      {"theme": "Investigative", "score": 25, "interpretation": "One-line interpretation"},
+      {"theme": "Artistic", "score": 22, "interpretation": "One-line interpretation"},
+      {"theme": "Social", "score": 20, "interpretation": "One-line interpretation"},
+      {"theme": "Enterprising", "score": 18, "interpretation": "One-line interpretation"},
+      {"theme": "Conventional", "score": 15, "interpretation": "One-line interpretation"}
     ]
   },
   "insights": "Actionable insights text"

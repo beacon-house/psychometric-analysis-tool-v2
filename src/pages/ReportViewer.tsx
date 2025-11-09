@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, isAuthenticated } from '../lib/supabase';
+import { regenerateReportSections, SECTION_LABELS, SECTION_CATEGORIES } from '../lib/reportRegeneration';
 import type { ReportSection, ReportSectionType } from '../types';
 import '../styles/ReportViewer.css';
 
@@ -19,6 +20,10 @@ export const ReportViewer: React.FC = () => {
   const [sections, setSections] = useState<ReportSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [selectedSections, setSelectedSections] = useState<ReportSectionType[]>([]);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerationProgress, setRegenerationProgress] = useState('');
 
   useEffect(() => {
     checkAuthAndLoadReport();
@@ -202,15 +207,26 @@ export const ReportViewer: React.FC = () => {
               </tbody>
             </table>
           )}
-          {content.results?.topThemes && (
-            <div className="themes-list">
-              {content.results.topThemes.map((theme: any, idx: number) => (
-                <div key={idx} className="theme-item">
-                  <span className="theme-rank">{theme.rank}.</span>
-                  <span className="theme-name">{theme.theme}</span>
-                  <span className="theme-score">Score: {theme.score}</span>
-                </div>
-              ))}
+          {content.results?.allThemes && (
+            <div className="all-themes-list">
+              <table className="results-table">
+                <thead>
+                  <tr>
+                    <th>Theme</th>
+                    <th>Score</th>
+                    <th>Interpretation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {content.results.allThemes.map((theme: any, idx: number) => (
+                    <tr key={idx}>
+                      <td><strong>{theme.theme}</strong></td>
+                      <td>{theme.score}/32</td>
+                      <td>{theme.interpretation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -309,6 +325,85 @@ export const ReportViewer: React.FC = () => {
     return '';
   };
 
+  const handleRegenerateClick = () => {
+    setShowRegenerateModal(true);
+    setSelectedSections([]);
+  };
+
+  const handleToggleSection = (sectionType: ReportSectionType) => {
+    setSelectedSections(prev => {
+      if (prev.includes(sectionType)) {
+        return prev.filter(s => s !== sectionType);
+      } else {
+        return [...prev, sectionType];
+      }
+    });
+  };
+
+  const handleToggleCategory = (category: string) => {
+    const categorySections = SECTION_CATEGORIES[category as keyof typeof SECTION_CATEGORIES];
+    const allSelected = categorySections.every(s => selectedSections.includes(s));
+
+    if (allSelected) {
+      setSelectedSections(prev => prev.filter(s => !categorySections.includes(s)));
+    } else {
+      setSelectedSections(prev => {
+        const newSections = [...prev];
+        categorySections.forEach(s => {
+          if (!newSections.includes(s)) {
+            newSections.push(s);
+          }
+        });
+        return newSections;
+      });
+    }
+  };
+
+  const handleSelectAll = () => {
+    const allSections = Object.values(SECTION_CATEGORIES).flat();
+    if (selectedSections.length === allSections.length) {
+      setSelectedSections([]);
+    } else {
+      setSelectedSections(allSections);
+    }
+  };
+
+  const handleRegenerateConfirm = async () => {
+    if (selectedSections.length === 0) {
+      alert('Please select at least one section to regenerate');
+      return;
+    }
+
+    const confirmation = confirm(
+      `This will regenerate ${selectedSections.length} section(s). The process may take 1-3 minutes. Continue?`
+    );
+
+    if (!confirmation) return;
+
+    setIsRegenerating(true);
+    setRegenerationProgress(`Regenerating ${selectedSections.length} section(s)...`);
+
+    try {
+      const result = await regenerateReportSections(studentId!, selectedSections);
+
+      if (result.success) {
+        setRegenerationProgress('Regeneration complete! Reloading report...');
+        await loadReport();
+        setShowRegenerateModal(false);
+        setSelectedSections([]);
+        alert(`Successfully regenerated ${result.sections_regenerated} section(s)`);
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err: any) {
+      console.error('Regeneration error:', err);
+      alert(`Failed to regenerate sections: ${err.message}`);
+    } finally {
+      setIsRegenerating(false);
+      setRegenerationProgress('');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="report-viewer">
@@ -344,9 +439,14 @@ export const ReportViewer: React.FC = () => {
               ← Back
             </button>
           </div>
-          <button onClick={() => window.print()} className="print-button">
-            Print Report
-          </button>
+          <div className="header-actions">
+            <button onClick={handleRegenerateClick} className="regenerate-button">
+              Regenerate
+            </button>
+            <button onClick={() => window.print()} className="print-button">
+              Print Report
+            </button>
+          </div>
         </div>
       </header>
 
@@ -401,6 +501,94 @@ export const ReportViewer: React.FC = () => {
           })}
         </main>
       </div>
+
+      {showRegenerateModal && (
+        <div className="modal-overlay" onClick={() => !isRegenerating && setShowRegenerateModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Regenerate Report Sections</h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowRegenerateModal(false)}
+                disabled={isRegenerating}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {isRegenerating ? (
+                <div className="regeneration-progress">
+                  <div className="loading-spinner"></div>
+                  <p>{regenerationProgress}</p>
+                </div>
+              ) : (
+                <>
+                  <p className="modal-description">
+                    Select the sections you want to regenerate. The AI will create new content based on the student's test results.
+                  </p>
+
+                  <div className="select-all-row">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={selectedSections.length === Object.values(SECTION_CATEGORIES).flat().length}
+                        onChange={handleSelectAll}
+                      />
+                      <strong>Select All Sections</strong>
+                    </label>
+                  </div>
+
+                  {Object.entries(SECTION_CATEGORIES).map(([category, categorySections]) => (
+                    <div key={category} className="section-category">
+                      <div className="category-header-modal">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={categorySections.every(s => selectedSections.includes(s))}
+                            onChange={() => handleToggleCategory(category)}
+                          />
+                          <strong>{category}</strong>
+                        </label>
+                      </div>
+                      <div className="category-sections">
+                        {categorySections.map(sectionType => (
+                          <label key={sectionType} className="section-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={selectedSections.includes(sectionType)}
+                              onChange={() => handleToggleSection(sectionType)}
+                            />
+                            {SECTION_LABELS[sectionType]}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+
+            {!isRegenerating && (
+              <div className="modal-footer">
+                <button
+                  className="modal-button cancel-button"
+                  onClick={() => setShowRegenerateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-button confirm-button"
+                  onClick={handleRegenerateConfirm}
+                  disabled={selectedSections.length === 0}
+                >
+                  Regenerate Selected ({selectedSections.length})
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
