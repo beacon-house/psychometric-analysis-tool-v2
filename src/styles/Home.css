@@ -107,66 +107,6 @@
   }
 }
 
-/* UX Testing Section */
-.ux-testing-section {
-  background: #FEF3C7;
-  border: 1px solid #FCD34D;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin: 1.25rem 0;
-  text-align: center;
-}
-
-.ux-testing-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: #92400E;
-  margin: 0 0 0.625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.ux-testing-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.reset-button {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.reset-button.reset-all {
-  background-color: #DC2626;
-  color: white;
-}
-
-.reset-button.reset-all:hover {
-  background-color: #B91C1C;
-}
-
-.reset-button.reset-individual {
-  background-color: #F59E0B;
-  color: white;
-}
-
-.reset-button.reset-individual:hover:not(:disabled) {
-  background-color: #D97706;
-}
-
-.reset-button:disabled {
-  background-color: #D1D5DB;
-  color: #9CA3AF;
-  cursor: not-allowed;
-}
-
 /* Responsive: 2x2 grid on tablets */
 @media (max-width: 1024px) {
   .tests-grid {
