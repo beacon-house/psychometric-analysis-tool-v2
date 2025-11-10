@@ -8,7 +8,6 @@ import { TestCard } from '../components/TestCard';
 import { ProgressIndicator } from '../components/ProgressIndicator';
 import { ContactModal } from '../components/ContactModal';
 import { useStudentData } from '../hooks/useStudentData';
-import { storage } from '../lib/storage';
 import { supabase } from '../lib/supabase';
 import { TEST_METADATA, TEST_ORDER } from '../lib/tests';
 import type { TestInfo, TestName, ContactFormData, TestStatus } from '../types';
@@ -56,91 +55,6 @@ export const Home: React.FC = () => {
       ...TEST_METADATA[testName],
       status: getTestStatus(testName),
     }));
-  };
-
-  const handleResetProgress = async () => {
-    if (!window.confirm('Are you sure you want to reset all test progress? This action cannot be undone.')) {
-      return;
-    }
-
-    const studentData = storage.getStudentData();
-    if (!studentData) {
-      storage.clearData();
-      window.location.reload();
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Delete all database records for this student
-      const { error: resultsError } = await supabase
-        .from('test_results')
-        .delete()
-        .eq('student_id', studentData.uuid);
-
-      if (resultsError) {
-        console.error('Error deleting test_results:', resultsError);
-        throw resultsError;
-      }
-
-      const { error: studentError } = await supabase
-        .from('students')
-        .delete()
-        .eq('id', studentData.uuid);
-
-      if (studentError) {
-        console.error('Error deleting student:', studentError);
-        throw studentError;
-      }
-
-      // Clear localStorage after successful database cleanup
-      storage.clearData();
-      window.location.reload();
-    } catch (error) {
-      console.error('Error resetting progress:', error);
-      alert('There was an error resetting your progress. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResetIndividualTest = async (testName: TestName) => {
-    if (!window.confirm(`Are you sure you want to reset progress for ${testName}? This action cannot be undone.`)) {
-      return;
-    }
-
-    const studentData = storage.getStudentData();
-    if (!studentData) {
-      storage.resetTest(testName);
-      window.location.reload();
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Delete database records for this specific test
-      const { error: resultsError } = await supabase
-        .from('test_results')
-        .delete()
-        .eq('student_id', studentData.uuid)
-        .eq('test_name', testName);
-
-      if (resultsError) {
-        console.error(`Error deleting test_results for ${testName}:`, resultsError);
-        throw resultsError;
-      }
-
-      // Clear localStorage test progress after successful database cleanup
-      storage.resetTest(testName);
-      window.location.reload();
-    } catch (error) {
-      console.error(`Error resetting ${testName}:`, error);
-      alert(`There was an error resetting ${testName}. Please try again.`);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleStartTest = (testName: TestName) => {
@@ -263,25 +177,6 @@ export const Home: React.FC = () => {
             </button>
           </div>
         )}
-
-        <div className="ux-testing-section">
-          <p className="ux-testing-label">UX Testing Tools (Temporary - Will be removed before launch)</p>
-          <div className="ux-testing-buttons">
-            <button onClick={handleResetProgress} className="reset-button reset-all">
-              Reset All
-            </button>
-            {TEST_ORDER.map(testName => (
-              <button
-                key={testName}
-                onClick={() => handleResetIndividualTest(testName)}
-                className="reset-button reset-individual"
-                disabled={!studentData?.testProgress[testName]}
-              >
-                Reset {testName}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div className="tests-grid">
           {tests.map(test => {
