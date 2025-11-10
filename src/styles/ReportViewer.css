@@ -149,7 +149,7 @@
   padding: 2rem;
 }
 
-/* Table of Contents */
+/* Table of Contents - Notion Style */
 .report-toc {
   position: sticky;
   top: 5.5rem;
@@ -158,34 +158,33 @@
   max-height: calc(100vh - 7rem);
   overflow-y: auto;
   background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .report-toc h3 {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #111827;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
 }
 
 .report-toc nav {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.125rem;
 }
 
 .report-toc a {
   font-size: 0.875rem;
   color: #6B7280;
   text-decoration: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  border-left: 3px solid transparent;
-  transition: all 0.2s ease;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
   display: block;
 }
 
@@ -195,27 +194,26 @@
 }
 
 .report-toc a.active {
-  background: #EFF6FF;
-  color: #1E40AF;
-  border-left-color: #3B82F6;
-  font-weight: 600;
+  background: #F3F4F6;
+  color: #111827;
+  font-weight: 500;
 }
 
 /* TOC Subsections */
 .toc-subsections {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   margin-left: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  margin-top: 0.125rem;
 }
 
 .toc-subsection {
   font-size: 0.8125rem;
   color: #9CA3AF;
-  padding: 0.375rem 0.75rem;
-  padding-left: 1rem;
-  border-left: 2px solid transparent;
+  padding: 0.25rem 0.5rem;
+  padding-left: 0.75rem;
 }
 
 .toc-subsection:hover {
@@ -224,9 +222,8 @@
 }
 
 .toc-subsection.active {
-  background: #EFF6FF;
-  color: #2563EB;
-  border-left-color: #60A5FA;
+  background: #F3F4F6;
+  color: #111827;
   font-weight: 500;
 }
 
@@ -315,71 +312,69 @@
 }
 
 .category-header {
-  margin: 3rem 0 1.5rem 0;
-  padding: 0.875rem 1.25rem;
-  background: #F3F4F6;
-  border-left: 3px solid #3B82F6;
-  border-radius: 0.375rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin: 3rem 0 1rem 0;
+  padding: 0;
 }
 
 .category-header h2 {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #374151;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .report-section {
   background: white;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 0.375rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #E5E7EB;
 }
 
 .section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.125rem;
+  font-weight: 600;
   color: #111827;
-  margin: 0 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #E5E7EB;
+  margin: 0 0 1.25rem 0;
+  padding: 0.5rem 0.75rem;
+  background: #F9FAFB;
+  border-radius: 0.25rem;
 }
 
 /* Student Type Content */
 .student-type-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .classification-box {
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-  border-left: 4px solid #3B82F6;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
+  background: #F9FAFB;
+  padding: 1.25rem;
+  border-radius: 0.375rem;
 }
 
 .classification-text {
-  font-size: 1.125rem;
-  line-height: 1.75;
-  color: #1F2937;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #374151;
   margin: 0;
 }
 
 .characteristics-box,
 .orientation-box {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
 .characteristics-box h4,
 .orientation-box h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #374151;
-  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .characteristics-list {
@@ -388,11 +383,11 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .characteristics-list li {
-  padding-left: 1.5rem;
+  padding-left: 1.25rem;
   position: relative;
   font-size: 0.9375rem;
   line-height: 1.6;
@@ -400,17 +395,17 @@
 }
 
 .characteristics-list li::before {
-  content: '✓';
+  content: '•';
   position: absolute;
   left: 0;
-  color: #10B981;
-  font-weight: 700;
+  color: #9CA3AF;
+  font-weight: 400;
 }
 
 .orientation-text {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #3B82F6;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #374151;
   margin: 0;
 }
 
@@ -418,14 +413,16 @@
 .test-summary-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .test-section h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #374151;
-  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .test-section p {
@@ -535,29 +532,29 @@
 .domain-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .domain-section {
-  padding: 1.25rem;
-  border-radius: 0.5rem;
+  padding: 1rem;
+  border-radius: 0.375rem;
 }
 
 .relatively-stronger-areas {
-  background-color: #F0FDF4;
-  border-left: 4px solid #10B981;
+  background-color: #F9FAFB;
 }
 
 .explore-with-caution-areas {
-  background-color: #FFFBEB;
-  border-left: 4px solid #F59E0B;
+  background-color: #F9FAFB;
 }
 
 .domain-section h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #374151;
-  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .domain-section > p {
@@ -574,17 +571,17 @@
 }
 
 .area-item {
-  padding: 1.25rem;
-  background: #F9FAFB;
-  border-left: 4px solid #3B82F6;
-  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 0.25rem;
+  border: 1px solid #E5E7EB;
 }
 
 .area-item h5 {
   font-size: 0.9375rem;
-  font-weight: 700;
+  font-weight: 600;
   color: #111827;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.375rem 0;
 }
 
 .area-item p {
@@ -598,14 +595,16 @@
 .summary-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .summary-section h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #374151;
-  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .narrative-text {
@@ -1074,10 +1073,12 @@
 }
 
 .strengths-pathways-section h4 {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 1rem;
+  color: #6B7280;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .pathways-list {
@@ -1087,12 +1088,10 @@
 }
 
 .pathways-list li {
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  background: white;
-  border-radius: 0.375rem;
-  border-left: 3px solid #3B82F6;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.375rem;
+  background: #F9FAFB;
+  border-radius: 0.25rem;
   font-size: 0.9375rem;
   line-height: 1.6;
   color: #374151;
@@ -1100,16 +1099,15 @@
 
 /* Holland Code Display */
 .holland-code-display {
-  margin: 1.5rem 0;
-  padding: 1rem 1.25rem;
-  background: #EFF6FF;
-  border-left: 4px solid #3B82F6;
-  border-radius: 0.375rem;
-  font-size: 1rem;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: #F9FAFB;
+  border-radius: 0.25rem;
+  font-size: 0.9375rem;
 }
 
 .holland-code-display strong {
-  color: #1E40AF;
+  color: #111827;
   margin-right: 0.5rem;
 }
 
