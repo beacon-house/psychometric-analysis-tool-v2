@@ -607,20 +607,22 @@ export const ReportViewer: React.FC = () => {
               <p className="handpicked-intro">
                 Based on your psychometric profile and counseling discussion, here are the curated majors recommended for you:
               </p>
-              {Object.keys(handpickedByDomain).map((domain) => (
-                <div key={domain} className="handpicked-domain">
-                  <h5 className="handpicked-domain-title">{domainNames[domain]}</h5>
-                  <ul className="handpicked-list">
-                    {handpickedByDomain[domain].map((rec) => (
-                      <li key={rec.id}>
-                        {/* Extract just the field name from full text */}
-                        {rec.recommendation_text.split(' – ')[0]}
-                        {rec.is_custom && <span className="custom-indicator">*</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <div className="handpicked-domains-grid">
+                {Object.keys(handpickedByDomain).map((domain) => (
+                  <div key={domain} className="handpicked-domain">
+                    <h5 className="handpicked-domain-title">{domainNames[domain]}</h5>
+                    <ul className="handpicked-list">
+                      {handpickedByDomain[domain].map((rec) => (
+                        <li key={rec.id}>
+                          {/* Extract just the field name from full text */}
+                          {rec.recommendation_text.split(' – ')[0]}
+                          {rec.is_custom && <span className="custom-indicator">*</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
               {hasCustomMajors && (
                 <p className="handpicked-footnote">
                   * Custom recommendation added during counseling session
