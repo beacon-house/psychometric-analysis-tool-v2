@@ -154,3 +154,16 @@ export interface ReportGenerationResponse {
   total_tokens?: number;
   error?: string;
 }
+
+// Selected Recommendations Types
+export interface SelectedRecommendation {
+  id: string;
+  student_id: string;
+  domain: string;
+  section: 'strongerAreas' | 'weakerAreas';
+  recommendation_text: string;
+  is_custom: boolean;
+  selected_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
