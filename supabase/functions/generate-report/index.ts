@@ -88,22 +88,20 @@ Deno.serve(async (req: Request) => {
       { type: "test_high5", prompt: getTestHigh5Prompt(testDataSummary) },
       { type: "test_big5", prompt: getTestBig5Prompt(testDataSummary) },
       { type: "test_riasec", prompt: getTestRiasecPrompt(testDataSummary) },
+      { type: "core_identity_summary", prompt: getCoreIdentityPrompt(testDataSummary) },
+      { type: "domain_stem", prompt: getDomainPrompt("stem", testDataSummary) },
+      { type: "domain_biology", prompt: getDomainPrompt("biology", testDataSummary) },
+      {
+        type: "domain_liberal_arts",
+        prompt: getDomainPrompt("liberal_arts", testDataSummary),
+      },
       {
         type: "domain_business",
         prompt: getDomainPrompt("business", testDataSummary),
       },
       {
-        type: "domain_economics",
-        prompt: getDomainPrompt("economics", testDataSummary),
-      },
-      {
         type: "domain_interdisciplinary",
         prompt: getDomainPrompt("interdisciplinary", testDataSummary),
-      },
-      { type: "domain_stem", prompt: getDomainPrompt("stem", testDataSummary) },
-      {
-        type: "domain_liberal_arts",
-        prompt: getDomainPrompt("liberal_arts", testDataSummary),
       },
     ];
 
@@ -138,25 +136,25 @@ Deno.serve(async (req: Request) => {
       .map((s) => `\n## ${s.type}\n${JSON.stringify(s.content, null, 2)}`)
       .join("\n");
 
-    const finalSummaryPrompt = getFinalSummaryPrompt(
+    const overallInsightPrompt = getOverallInsightPrompt(
       testDataSummary,
       previousSectionsText
     );
 
-    console.log("Generating final summary");
+    console.log("Generating overall insight");
 
-    const { content: finalContent, tokensUsed: finalTokens } = await callOpenAI(
-      finalSummaryPrompt,
+    const { content: insightContent, tokensUsed: insightTokens } = await callOpenAI(
+      overallInsightPrompt,
       openaiApiKey
     );
 
-    totalTokens += finalTokens;
+    totalTokens += insightTokens;
 
     await supabase.from("report_sections").upsert({
       student_id: studentId,
-      section_type: "final_summary",
-      content: finalContent,
-      tokens_used: finalTokens,
+      section_type: "overall_insight",
+      content: insightContent,
+      tokens_used: insightTokens,
       generated_at: new Date().toISOString(),
     });
 
@@ -177,7 +175,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         message: "Report generated successfully",
-        sections_generated: 11,
+        sections_generated: 12,
         total_tokens: totalTokens,
       }),
       {
@@ -216,13 +214,13 @@ async function callOpenAI(
         {
           role: "system",
           content:
-            "You are an expert career counselor and psychometric analyst. Provide responses in valid JSON format only.",
+            "You are an expert career counselor and psychometric analyst. Provide responses in valid JSON format only. CRITICAL: Always use third person (the student, they, them). NEVER use second person (you, your). Be concise and direct.",
         },
         { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 2000,
+      temperature: 0.5,
+      max_tokens: 2500,
     }),
   });
 
@@ -308,211 +306,297 @@ function getStudentTypePrompt(testData: string): string {
 
 ${testData}
 
-Please provide:
-1. A brief personality classification (2-3 sentences) that synthesizes insights from all four tests
-2. Key characteristics that define this student's unique profile
-3. Overall orientation (e.g., analytical thinker, creative collaborator, practical leader, etc.)
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
+
+Provide a single paragraph (4-5 sentences, 60-80 words) that captures the student's core identity.
+
+Structure:
+Sentence 1: "{Archetype} with {2-3 defining qualities}."
+Sentence 2: "The student is {3-4 core traits}, and thrives when {context/situation}."
+Sentence 3: "They combine {trait 1} with {trait 2}, preferring to {approach/style}."
+Sentence 4: "Their natural ability to {strength} makes them effective in {contexts}."
 
 Format your response as structured JSON with the following schema:
 {
-  "classification": "Brief 2-3 sentence classification",
-  "keyCharacteristics": ["characteristic 1", "characteristic 2", "characteristic 3"],
-  "orientation": "Overall orientation label"
+  "classification": "Single paragraph in third person describing the student type (4-5 sentences)"
 }`;
 }
 
 function getTest16PPrompt(testData: string): string {
-  return `You are an expert career counselor explaining the 16 Personalities test results to a student.
+  return `You are an expert career counselor explaining the 16 Personalities test results.
 
 ${testData}
 
-Please provide a comprehensive summary with the following sections:
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
-1. **What This Test Measures**: Explain what the 16 Personalities test measures in 2-3 sentences (focus on the five dimensions: Mind, Energy, Nature, Tactics, Identity)
+Provide a CONCISE summary with exactly these sections:
 
-2. **Your Results**: Present the student's results in a clear, tabular format showing each dimension with their score and preference
+1. **What This Test Measures**: 2-3 sentences maximum explaining the five dimensions.
 
-3. **What This Means For You**: Provide actionable, user-friendly insights (3-4 paragraphs) explaining how this personality type typically approaches work and learning, key strengths and potential challenges, and practical applications for career and academic planning.
+2. **Results Table**: Present results in this exact 3-column format:
+   | Dimension | Score | Preference |
+
+3. **What This Means For You**: ONE paragraph only (4-5 sentences maximum) explaining how this personality type shows up.
+   - NO cross-referencing to other tests
+   - NO career suggestions
+   - Focus only on personality traits and behaviors
+
+IMPORTANT: Keep total response under 150 words. Be concise and direct.
 
 Format your response as structured JSON with this schema:
 {
-  "whatItMeasures": "Explanation text",
+  "whatItMeasures": "2-3 sentence explanation",
   "results": {
-    "personalityType": "Type code",
-    "dimensions": [{"name": "Dimension", "score": "X%", "preference": "Label"}]
+    "personalityType": "Type code (e.g., INFJ-T)",
+    "dimensions": [
+      {"name": "Extraversion", "score": "46%", "preference": "Introverted"}
+    ]
   },
-  "insights": "Actionable insights text"
+  "insights": "Single paragraph in third person (4-5 sentences max) about what this means for the student"
 }`;
 }
 
 function getTestHigh5Prompt(testData: string): string {
-  return `You are an expert career counselor explaining the HIGH5 strengths test results to a student.
+  return `You are an expert career counselor explaining the HIGH5 strengths test results.
 
 ${testData}
 
-Please provide a comprehensive summary with the following sections:
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
-1. **What This Test Measures**: Explain what the HIGH5 test measures in 2-3 sentences
-2. **Your Top 5 Strengths**: Present the student's top 5 strengths with strength name, domain, and brief description
-3. **What This Means For You**: Provide actionable insights (3-4 paragraphs) explaining how to leverage these strengths
+Provide a CONCISE summary with exactly these sections:
+
+1. **What This Test Measures**: 2-3 sentences maximum.
+
+2. **Results Table**: Present top 5 strengths in this exact 3-column format:
+   | Strength | Domain | Interpretation |
+
+3. **What This Means For You**: ONE paragraph only (4-5 sentences maximum).
+   - NO cross-referencing to other tests
+   - NO career suggestions
+   - Focus on how these strengths manifest in behavior
+
+IMPORTANT: Keep total response under 150 words.
 
 Format your response as structured JSON with this schema:
 {
-  "whatItMeasures": "Explanation text",
+  "whatItMeasures": "2-3 sentence explanation",
   "results": {
-    "topFive": [{"rank": 1, "strength": "Name", "domain": "Domain", "description": "Description"}]
+    "topFive": [
+      {"rank": 1, "strength": "Coach", "domain": "Feeling", "interpretation": "Brief description of what this strength means"}
+    ]
   },
-  "insights": "Actionable insights text"
+  "insights": "Single paragraph in third person (4-5 sentences max)"
 }`;
 }
 
 function getTestBig5Prompt(testData: string): string {
-  return `You are an expert career counselor explaining the Big Five (OCEAN) personality test results to a student.
+  return `You are an expert career counselor explaining the Big Five personality test results.
 
 ${testData}
 
-Please provide a comprehensive summary with the following sections:
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
-1. **What This Test Measures**: Explain what the Big Five test measures in 2-3 sentences
-2. **Your Results**: Present the student's OCEAN scores showing each trait with percentile and level
-3. **What This Means For You**: Provide actionable insights (3-4 paragraphs)
+Provide a CONCISE summary with exactly these sections:
+
+1. **What This Test Measures**: 2-3 sentences maximum.
+
+2. **Results Table**: Present all 5 traits in this exact 3-column format:
+   | Trait | Percentile | Level |
+   CRITICAL: Include actual percentile scores and level descriptions (e.g., "High", "Moderate", "Low")
+
+3. **What This Means For You**: ONE paragraph only (4-5 sentences maximum).
+   - NO cross-referencing to other tests
+   - NO career suggestions
+   - Focus on behavioral tendencies
+
+IMPORTANT: Keep total response under 150 words.
 
 Format your response as structured JSON with this schema:
 {
-  "whatItMeasures": "Explanation text",
+  "whatItMeasures": "2-3 sentence explanation",
   "results": {
-    "traits": [{"name": "Trait", "percentile": 75, "level": "High"}]
+    "traits": [
+      {"name": "Openness to Experience", "percentile": "63%", "level": "Moderately High"}
+    ]
   },
-  "insights": "Actionable insights text"
+  "insights": "Single paragraph in third person (4-5 sentences max)"
 }`;
 }
 
 function getTestRiasecPrompt(testData: string): string {
-  return `You are an expert career counselor explaining the RIASEC career interest test results to a student.
+  return `You are an expert career counselor explaining the RIASEC career interest test results.
 
 ${testData}
 
-Please provide a comprehensive summary with the following sections:
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
-1. **What This Test Measures**: Explain what the RIASEC test measures in 2-3 sentences (focus on Holland's six career interest themes)
+Provide a CONCISE summary with exactly these sections:
 
-2. **Your Results**: Present the student's results showing:
-   - Holland Code (three-letter code representing top 3 themes)
-   - ALL SIX career themes with their scores and one-line interpretations:
-     * Realistic (practical, hands-on work)
-     * Investigative (analytical, research-oriented)
-     * Artistic (creative expression)
-     * Social (helping others)
-     * Enterprising (leading and managing)
-     * Conventional (organized, detail-oriented)
+1. **What This Test Measures**: 2-3 sentences maximum about Holland's six themes.
 
-3. **What This Means For You**: Provide actionable insights (3-4 paragraphs) explaining:
-   - Career fields and roles aligned with these interests
-   - Types of tasks and environments that will be engaging
-   - Practical next steps for career exploration
+2. **Results Table**: Present ALL SIX themes in this exact 3-column format:
+   | Theme | Score | Interpretation |
+   Order by score (highest to lowest).
+
+3. **Holland Code**: The 3-letter code must be returned as a separate field.
+
+4. **What This Means For You**: ONE paragraph only (4-5 sentences maximum).
+   - NO cross-referencing to other tests
+   - NO detailed career lists
+   - Focus on work environment preferences
+
+IMPORTANT: Keep total response under 150 words.
 
 Format your response as structured JSON with this schema:
 {
-  "whatItMeasures": "Explanation text",
+  "whatItMeasures": "2-3 sentence explanation",
   "results": {
-    "hollandCode": "Three letter code",
+    "hollandCode": "CSE",
     "allThemes": [
-      {"theme": "Realistic", "score": 28, "interpretation": "One-line interpretation of what this score means"},
-      {"theme": "Investigative", "score": 25, "interpretation": "One-line interpretation"},
-      {"theme": "Artistic", "score": 22, "interpretation": "One-line interpretation"},
-      {"theme": "Social", "score": 20, "interpretation": "One-line interpretation"},
-      {"theme": "Enterprising", "score": 18, "interpretation": "One-line interpretation"},
-      {"theme": "Conventional", "score": 15, "interpretation": "One-line interpretation"}
+      {"theme": "Conventional", "score": "30/32", "interpretation": "High to very high interest in organized, detail-oriented work"}
     ]
   },
-  "insights": "Actionable insights text"
+  "insights": "Single paragraph in third person (4-5 sentences max)"
 }`;
 }
 
 function getDomainPrompt(domain: string, testData: string): string {
   const domainInfo: Record<string, { name: string; description: string }> = {
-    business: {
-      name: "Business Management and Leadership",
+    stem: {
+      name: "STEM & Applied Sciences",
       description:
-        "includes fields such as strategic management, operations, organizational behavior, human resources, project management, entrepreneurship, and executive leadership",
+        "includes fields such as engineering, computer science, mathematics, physics, chemistry, biology, data science, technology development, and applied research",
     },
-    economics: {
-      name: "Economics and Finance",
+    biology: {
+      name: "Biology & Natural Sciences",
       description:
-        "includes fields such as microeconomics, macroeconomics, financial analysis, investment banking, corporate finance, econometrics, quantitative analysis, and financial planning",
+        "includes fields such as biology, environmental science, ecology, biotechnology, neuroscience, genetics, marine biology, and conservation science",
+    },
+    liberal_arts: {
+      name: "Liberal Arts & Communications",
+      description:
+        "includes fields such as literature, philosophy, history, media studies, communications, journalism, creative writing, visual arts, and cultural studies",
+    },
+    business: {
+      name: "Business & Economics",
+      description:
+        "includes fields such as business administration, management, finance, marketing, accounting, economics, entrepreneurship, and organizational behavior",
     },
     interdisciplinary: {
       name: "Interdisciplinary Systems Fields",
       description:
         "include areas that bridge multiple disciplines such as public policy, international relations, sustainability studies, social innovation, data science, behavioral economics, and complex systems analysis",
     },
-    stem: {
-      name: "STEM and Applied Sciences",
-      description:
-        "includes fields such as engineering, computer science, mathematics, physics, chemistry, biology, data science, technology development, and applied research",
-    },
-    liberal_arts: {
-      name: "Liberal Arts and Communications",
-      description:
-        "includes fields such as literature, philosophy, history, media studies, communications, journalism, creative writing, visual arts, and cultural studies",
-    },
   };
 
   const info = domainInfo[domain];
 
-  return `You are an expert career counselor analyzing a student's fit for the ${info.name} domain.
+  return `You are an expert career counselor analyzing the student's fit for the ${info.name} domain.
+
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
 Domain Description: This domain ${info.description}.
 
 Student Test Results:
 ${testData}
 
-Based on the student's comprehensive test results, provide:
+Based on the student's test results, provide:
 
-1. **Overall Fit Assessment**: Brief assessment (2-3 sentences) of how well-suited this student is for the ${info.name} domain
+1. **Relatively Stronger Areas**: List 3-7 specific majors/fields with brief evidence-based rationale (10-15 words each)
+   Format: "**Field Name** – brief rationale citing specific test evidence"
 
-2. **Relatively Stronger Areas**: Identify 3-4 specific sub-fields or specializations within this domain where the student's profile suggests strong potential
+2. **Explore with Caution**: List 3-6 specific majors/fields with brief explanation of gaps (10-15 words each)
+   Format: "**Field Name** – brief rationale explaining why it's a weaker fit"
 
-3. **Areas to Explore**: Identify 2-3 areas within this domain that might be more challenging but still worth exploring for growth
+CRITICAL REQUIREMENTS:
+- Use BULLET FORMAT ONLY, not prose paragraphs
+- Cite specific test scores and strength names in rationales
+- Be honest about poor fits
+- NO "Overall Fit Assessment" paragraph or section
+- Each rationale must be 10-15 words maximum
 
 Format your response as structured JSON with this schema:
 {
-  "fitAssessment": "Overall fit assessment text",
   "strongerAreas": [
-    {"area": "Sub-field name", "rationale": "Why this is a strong fit"}
+    {"field": "Human Resources Management", "rationale": "high Agreeableness (80%) + Social (26) + Coach for people-focused roles"}
   ],
-  "areasToExplore": [
-    {"area": "Sub-field name", "rationale": "Why this could be valuable"}
+  "weakerAreas": [
+    {"field": "Theoretical Physics", "rationale": "low Investigative (14) makes abstract mathematical modeling less aligned"}
   ]
 }`;
 }
 
-function getFinalSummaryPrompt(
+function getCoreIdentityPrompt(testData: string): string {
+  return `You are an expert career counselor synthesizing psychometric test results into a Core Identity Summary.
+
+${testData}
+
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
+
+Create TWO distinct outputs:
+
+1. **Core Identity Table** with EXACTLY 4 rows:
+   | Category | Key Characteristics |
+   | Core Drive | {3-5 keywords with + separators} |
+   | Personality | {4-5 comma-separated keywords} |
+   | Work Style | {4-5 comma-separated keywords} |
+   | Learning Style | {4-5 comma-separated keywords} |
+
+2. **Strengths & Pathways**: Exactly 3-4 bullet points combining HIGH5 strengths with personality traits:
+   Format: "**The {Archetype Name}** – {Strength 1} + {Strength 2}: {10-15 word description}"
+   Use third person language in descriptions
+
+Format your response as structured JSON with this schema:
+{
+  "coreIdentity": {
+    "coreDrive": "Leadership + Achievement + Service",
+    "personality": "Organized, Empathetic, Collaborative, Responsible",
+    "workStyle": "Systematic, People-Focused, Reliable, Consensus-Building",
+    "learningStyle": "Practical Application, Collaborative Learning, Structured Environments"
+  },
+  "strengthsPathways": [
+    "**The Organized Leader** – Coach + Deliverer: orchestrates teams efficiently while ensuring follow-through and support."
+  ]
+}`;
+}
+
+function getOverallInsightPrompt(
   testData: string,
   previousSections: string
 ): string {
-  return `You are an expert career counselor creating a comprehensive summary report for a student based on their psychometric assessment.
+  return `You are an expert career counselor creating an overall insight and potential majors list.
+
+IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
 Student Test Results:
 ${testData}
 
-Previous Report Sections Generated:
+All Previous Report Sections:
 ${previousSections}
 
-Based on all the information above, create a comprehensive final summary with:
+Based on all the information above, provide:
 
-1. **Core Identity**: Synthesize the student's personality, strengths, and interests into a cohesive narrative (2-3 paragraphs)
+1. **Overall Insight**: ONE paragraph (4-5 sentences) synthesizing:
+   - Best-fit domains from the career pathway analyses
+   - Strongest alignment areas across all sections
+   - Why these paths suit the student based on their psychometric profile
+   - Use third person language throughout
 
-2. **Career Pathway Recommendations**: Based on the domain analyses, provide clear recommendations (2-3 paragraphs) on which domains show the strongest alignment and specific career paths to prioritize
-
-3. **Actionable Next Steps**: Provide 4-5 concrete, specific action items the student should take
+2. **Potential Majors**: A list of 6-8 specific majors extracted from "Relatively Stronger Areas" across all domain sections
+   - Just major names, NO explanations or descriptions
+   - Deduplicate if needed
+   - Order by strength of fit (strongest first)
 
 Format your response as structured JSON with this schema:
 {
-  "coreIdentity": "Core identity narrative",
-  "careerRecommendations": "Career pathway recommendations",
-  "nextSteps": [
-    {"step": "Specific action item", "rationale": "Why this step is important"}
+  "overallInsight": "Single paragraph in third person (4-5 sentences) synthesizing best-fit domains and why they suit the student",
+  "potentialMajors": [
+    "Human Resources Management",
+    "Business Administration",
+    "Operations Management",
+    "Organizational Behavior",
+    "Public Administration",
+    "Education Leadership"
   ]
 }`;
 }
