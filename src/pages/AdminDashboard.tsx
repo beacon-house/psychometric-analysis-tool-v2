@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, isAuthenticated, getCurrentUser, signOut } from '../lib/supabase';
+import { Avatar } from '../components/Avatar';
+import { ProfileDropdown } from '../components/ProfileDropdown';
 import type { StudentWithTests, TestName, ReportStatus } from '../types';
 import '../styles/AdminDashboard.css';
 
@@ -13,6 +15,7 @@ export const AdminDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
   const [error, setError] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -337,19 +340,26 @@ export const AdminDashboard: React.FC = () => {
       <header className="dashboard-header">
         <div className="header-content">
           <div className="header-left">
+            <img src="/bh-ig-logo.png" alt="Beacon House" className="header-logo" />
             <h1 className="dashboard-title">Admin Dashboard</h1>
-            <p className="dashboard-subtitle">Student Progress & Report Management</p>
           </div>
           <div className="header-right">
-            <span className="user-email">{userEmail}</span>
-            <button onClick={handleSignOut} className="sign-out-button">
-              Sign Out
-            </button>
+            <Avatar email={userEmail} onClick={() => setShowDropdown(!showDropdown)} />
+            {showDropdown && (
+              <ProfileDropdown
+                email={userEmail}
+                onSignOut={handleSignOut}
+                onClose={() => setShowDropdown(false)}
+              />
+            )}
           </div>
         </div>
       </header>
 
       <main className="dashboard-main">
+        <div className="dashboard-subtitle-section">
+          <p className="dashboard-subtitle">Student Progress & Report Management</p>
+        </div>
         {error && (
           <div className="error-banner">
             {error}

@@ -1,0 +1,49 @@
+/* Avatar Component Styles */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar:active {
+  transform: scale(0.98);
+}
+
+.avatar:focus {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+.avatar-initials {
+  color: white;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  user-select: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .avatar-initials {
+    font-size: 0.875rem;
+  }
+}
