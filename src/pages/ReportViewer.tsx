@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, isAuthenticated } from '../lib/supabase';
 import { regenerateReportSections, SECTION_LABELS, SECTION_CATEGORIES } from '../lib/reportRegeneration';
 import { RegenerationLoadingModal } from '../components/RegenerationLoadingModal';
-import type { ReportSection, ReportSectionType } from '../types';
+import type { ReportSection, ReportSectionType, SelectedRecommendation } from '../types';
 import '../styles/ReportViewer.css';
 
 interface Student {
@@ -19,6 +19,10 @@ export const ReportViewer: React.FC = () => {
   const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
   const [sections, setSections] = useState<ReportSection[]>([]);
+  const [selectedRecommendations, setSelectedRecommendations] = useState<SelectedRecommendation[]>([])
+  const [addingCustomTo, setAddingCustomTo] = useState<string | null>(null); // Format: "domain-section" e.g. "domain_stem-strongerAreas"
+  const [customMajorText, setCustomMajorText] = useState<string>('');
+  const [isSaving, setIsSaving] = useState<string | null>(null); // Track which item is currently saving
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
@@ -100,6 +104,18 @@ export const ReportViewer: React.FC = () => {
 
       const orderedSections = orderSections(sectionsData || []);
       setSections(orderedSections);
+
+      // Fetch selected recommendations for this student
+      const { data: selectedData, error: selectedError } = await supabase
+        .from('selected_recommendations')
+        .select('*')
+        .eq('student_id', studentId);
+
+      if (selectedError) {
+        console.error('Error loading selected recommendations:', selectedError);
+      } else {
+        setSelectedRecommendations(selectedData || []);
+      }
     } catch (err: any) {
       console.error('Error loading report:', err);
       setError('Failed to load report data');
@@ -127,6 +143,104 @@ export const ReportViewer: React.FC = () => {
     return order
       .map((type) => sectionsData.find((s) => s.section_type === type))
       .filter((s): s is ReportSection => s !== undefined);
+  };
+
+  // Helper functions for recommendation selection
+  const isRecommendationSelected = (domain: string, section: string, text: string): boolean => {
+    return selectedRecommendations.some(
+      (rec) => rec.domain === domain && rec.section === section && rec.recommendation_text === text
+    );
+  };
+
+  const handleToggleRecommendation = async (domain: string, section: string, text: string, isChecked: boolean) => {
+    const saveKey = `${domain}-${section}-${text}`;
+    setIsSaving(saveKey);
+
+    try {
+      if (isChecked) {
+        // Add selection
+        const { data: userData } = await supabase.auth.getUser();
+        const { data, error } = await supabase
+          .from('selected_recommendations')
+          .insert({
+            student_id: studentId,
+            domain,
+            section,
+            recommendation_text: text,
+            is_custom: false,
+            selected_by: userData?.user?.email || null,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Update local state
+        setSelectedRecommendations((prev) => [...prev, data]);
+      } else {
+        // Remove selection
+        const itemToRemove = selectedRecommendations.find(
+          (rec) => rec.domain === domain && rec.section === section && rec.recommendation_text === text
+        );
+
+        if (itemToRemove) {
+          const { error } = await supabase
+            .from('selected_recommendations')
+            .delete()
+            .eq('id', itemToRemove.id);
+
+          if (error) throw error;
+
+          // Update local state
+          setSelectedRecommendations((prev) => prev.filter((rec) => rec.id !== itemToRemove.id));
+        }
+      }
+    } catch (error: any) {
+      console.error('Error toggling recommendation:', error);
+      alert('Failed to save selection. Please try again.');
+    } finally {
+      setIsSaving(null);
+    }
+  };
+
+  const handleAddCustomRecommendation = async (domain: string, section: string) => {
+    if (!customMajorText.trim()) {
+      alert('Please enter a major name');
+      return;
+    }
+
+    const saveKey = `${domain}-${section}-custom`;
+    setIsSaving(saveKey);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('selected_recommendations')
+        .insert({
+          student_id: studentId,
+          domain,
+          section,
+          recommendation_text: customMajorText.trim(),
+          is_custom: true,
+          selected_by: userData?.user?.email || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setSelectedRecommendations((prev) => [...prev, data]);
+
+      // Reset input
+      setCustomMajorText('');
+      setAddingCustomTo(null);
+    } catch (error: any) {
+      console.error('Error adding custom recommendation:', error);
+      alert('Failed to add custom major. Please try again.');
+    } finally {
+      setIsSaving(null);
+    }
   };
 
   const getSectionTitle = (type: ReportSectionType): string => {
@@ -268,30 +382,149 @@ export const ReportViewer: React.FC = () => {
     </div>
   );
 
-  const renderDomainAnalysis = (content: any) => (
-    <div className="section-content domain-content">
-      <div className="domain-section relatively-stronger-areas">
-        <h4>Relatively Stronger Areas</h4>
-        <ul className="areas-list-bullets">
-          {content.strongerAreas?.map((area: any, idx: number) => (
-            <li key={idx}>
+  const renderDomainAnalysis = (content: any, domain: string) => {
+    // Get custom recommendations for this domain
+    const customStronger = selectedRecommendations.filter(
+      (rec) => rec.domain === domain && rec.section === 'strongerAreas' && rec.is_custom
+    );
+    const customWeaker = selectedRecommendations.filter(
+      (rec) => rec.domain === domain && rec.section === 'weakerAreas' && rec.is_custom
+    );
+
+    const renderRecommendationItem = (area: any, section: string, idx: number) => {
+      const fullText = `${area.field} – ${area.rationale}`;
+      const isSelected = isRecommendationSelected(domain, section, fullText);
+      const saveKey = `${domain}-${section}-${fullText}`;
+      const isCurrentlySaving = isSaving === saveKey;
+
+      return (
+        <li key={idx} className="recommendation-item">
+          <label className="recommendation-label">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => handleToggleRecommendation(domain, section, fullText, e.target.checked)}
+              disabled={isCurrentlySaving}
+              className="recommendation-checkbox"
+            />
+            <span className="recommendation-text">
               <strong>{area.field}</strong> – {area.rationale}
-            </li>
-          ))}
-        </ul>
+              {isCurrentlySaving && <span className="saving-indicator"> (Saving...)</span>}
+            </span>
+          </label>
+        </li>
+      );
+    };
+
+    const renderCustomRecommendation = (rec: SelectedRecommendation, idx: number) => {
+      const saveKey = `${domain}-${rec.section}-${rec.recommendation_text}`;
+      const isCurrentlySaving = isSaving === saveKey;
+
+      return (
+        <li key={`custom-${idx}`} className="recommendation-item custom-recommendation">
+          <label className="recommendation-label">
+            <input
+              type="checkbox"
+              checked={true}
+              onChange={(e) => handleToggleRecommendation(domain, rec.section, rec.recommendation_text, e.target.checked)}
+              disabled={isCurrentlySaving}
+              className="recommendation-checkbox"
+            />
+            <span className="recommendation-text">
+              <strong>{rec.recommendation_text}</strong>
+              <span className="custom-badge">*</span>
+              {isCurrentlySaving && <span className="saving-indicator"> (Saving...)</span>}
+            </span>
+          </label>
+        </li>
+      );
+    };
+
+    const renderAddCustomButton = (section: string) => {
+      const addKey = `${domain}-${section}`;
+      const isAdding = addingCustomTo === addKey;
+      const saveKey = `${domain}-${section}-custom`;
+      const isCurrentlySaving = isSaving === saveKey;
+
+      return (
+        <div className="add-custom-major">
+          {!isAdding ? (
+            <button
+              onClick={() => setAddingCustomTo(addKey)}
+              className="add-custom-button"
+              disabled={isCurrentlySaving}
+            >
+              + Add Custom Major
+            </button>
+          ) : (
+            <div className="custom-major-input-container">
+              <input
+                type="text"
+                value={customMajorText}
+                onChange={(e) => setCustomMajorText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddCustomRecommendation(domain, section);
+                  } else if (e.key === 'Escape') {
+                    setAddingCustomTo(null);
+                    setCustomMajorText('');
+                  }
+                }}
+                placeholder="Enter major name"
+                className="custom-major-input"
+                autoFocus
+                disabled={isCurrentlySaving}
+              />
+              <button
+                onClick={() => handleAddCustomRecommendation(domain, section)}
+                className="save-custom-button"
+                disabled={isCurrentlySaving}
+                title="Save"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => {
+                  setAddingCustomTo(null);
+                  setCustomMajorText('');
+                }}
+                className="cancel-custom-button"
+                disabled={isCurrentlySaving}
+                title="Cancel"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div className="section-content domain-content">
+        <div className="domain-section relatively-stronger-areas">
+          <h4>Relatively Stronger Areas</h4>
+          <ul className="areas-list-bullets">
+            {content.strongerAreas?.map((area: any, idx: number) =>
+              renderRecommendationItem(area, 'strongerAreas', idx)
+            )}
+            {customStronger.map((rec, idx) => renderCustomRecommendation(rec, idx))}
+          </ul>
+          {renderAddCustomButton('strongerAreas')}
+        </div>
+        <div className="domain-section explore-with-caution-areas">
+          <h4>Explore with Caution</h4>
+          <ul className="areas-list-bullets">
+            {content.weakerAreas?.map((area: any, idx: number) =>
+              renderRecommendationItem(area, 'weakerAreas', idx)
+            )}
+            {customWeaker.map((rec, idx) => renderCustomRecommendation(rec, idx))}
+          </ul>
+          {renderAddCustomButton('weakerAreas')}
+        </div>
       </div>
-      <div className="domain-section explore-with-caution-areas">
-        <h4>Explore with Caution</h4>
-        <ul className="areas-list-bullets">
-          {content.weakerAreas?.map((area: any, idx: number) => (
-            <li key={idx}>
-              <strong>{area.field}</strong> – {area.rationale}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Helper function to parse markdown bold into HTML
   const parseMarkdownBold = (text: string): string => {
@@ -343,25 +576,75 @@ export const ReportViewer: React.FC = () => {
     </div>
   );
 
-  const renderOverallInsight = (content: any) => (
-    <div className="section-content summary-content">
-      {content.overallInsight && (
-        <div className="summary-section">
-          <p className="narrative-text">{content.overallInsight}</p>
+  const renderOverallInsight = (content: any) => {
+    // Group selected recommendations by domain
+    const domainNames: Record<string, string> = {
+      domain_stem: 'STEM & Applied Sciences',
+      domain_biology: 'Biology & Natural Sciences',
+      domain_liberal_arts: 'Liberal Arts & Communications',
+      domain_business: 'Business & Economics',
+      domain_interdisciplinary: 'Interdisciplinary Systems Fields',
+    };
+
+    const handpickedByDomain: Record<string, SelectedRecommendation[]> = {};
+    selectedRecommendations.forEach((rec) => {
+      if (!handpickedByDomain[rec.domain]) {
+        handpickedByDomain[rec.domain] = [];
+      }
+      handpickedByDomain[rec.domain].push(rec);
+    });
+
+    const hasHandpickedMajors = selectedRecommendations.length > 0;
+    const hasCustomMajors = selectedRecommendations.some((rec) => rec.is_custom);
+
+    return (
+      <div className="section-content summary-content">
+        {/* Handpicked Majors Section */}
+        <div className="summary-section handpicked-majors-section">
+          <h4>Handpicked Majors</h4>
+          {hasHandpickedMajors ? (
+            <>
+              <p className="handpicked-intro">
+                Based on your psychometric profile and counseling discussion, here are the curated majors recommended for you:
+              </p>
+              <div className="handpicked-domains-grid">
+                {Object.keys(handpickedByDomain).map((domain) => (
+                  <div key={domain} className="handpicked-domain">
+                    <h5 className="handpicked-domain-title">{domainNames[domain]}</h5>
+                    <ul className="handpicked-list">
+                      {handpickedByDomain[domain].map((rec) => (
+                        <li key={rec.id}>
+                          {/* Extract just the field name from full text */}
+                          {rec.recommendation_text.split(' – ')[0]}
+                          {rec.is_custom && <span className="custom-indicator">*</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              {hasCustomMajors && (
+                <p className="handpicked-footnote">
+                  * Custom recommendation added during counseling session
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="handpicked-placeholder">
+              No majors selected yet. Your counselor will discuss and select relevant recommendations during your session.
+            </p>
+          )}
         </div>
-      )}
-      {content.potentialMajors && content.potentialMajors.length > 0 && (
-        <div className="summary-section">
-          <h4>Potential Majors</h4>
-          <ul className="majors-list">
-            {content.potentialMajors.map((major: string, idx: number) => (
-              <li key={idx}>{major}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
+
+        {/* Existing Overall Insight content */}
+        {content.overallInsight && (
+          <div className="summary-section">
+            <p className="narrative-text">{content.overallInsight}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderSectionContent = (section: ReportSection) => {
     const content = section.content;
@@ -373,7 +656,7 @@ export const ReportViewer: React.FC = () => {
     } else if (section.section_type === 'core_identity_summary') {
       return renderCoreIdentitySummary(content);
     } else if (section.section_type.startsWith('domain_')) {
-      return renderDomainAnalysis(content);
+      return renderDomainAnalysis(content, section.section_type);
     } else if (section.section_type === 'final_summary' || section.section_type === 'overall_insight') {
       return renderOverallInsight(content);
     }
