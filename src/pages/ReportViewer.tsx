@@ -642,16 +642,6 @@ export const ReportViewer: React.FC = () => {
             <p className="narrative-text">{content.overallInsight}</p>
           </div>
         )}
-        {content.potentialMajors && content.potentialMajors.length > 0 && (
-          <div className="summary-section">
-            <h4>Potential Majors</h4>
-            <ul className="majors-list">
-              {content.potentialMajors.map((major: string, idx: number) => (
-                <li key={idx}>{major}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     );
   };
