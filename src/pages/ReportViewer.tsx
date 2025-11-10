@@ -32,17 +32,17 @@ export const ReportViewer: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = document.querySelectorAll('.report-section, .category-header');
-      const scrollPosition = window.scrollY + 150;
+      const reportSections = document.querySelectorAll('.report-section');
+      const scrollPosition = window.scrollY + 200;
 
       let currentSection = '';
 
-      sections.forEach((section) => {
+      reportSections.forEach((section) => {
         const sectionTop = (section as HTMLElement).offsetTop;
         const sectionHeight = (section as HTMLElement).offsetHeight;
 
         if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-          const sectionId = section.id || section.getAttribute('data-section-id') || '';
+          const sectionId = section.id || '';
           if (sectionId) {
             currentSection = sectionId;
           }
@@ -513,25 +513,91 @@ export const ReportViewer: React.FC = () => {
             </a>
             <a
               href="#section-test"
-              className={activeSection === 'section-test' ? 'active' : ''}
+              className={activeSection === 'section-test' || activeSection.startsWith('test_') ? 'active' : ''}
             >
               Section 1: Test Summaries
             </a>
+            <div className="toc-subsections">
+              <a
+                href="#test_16p"
+                className={`toc-subsection ${activeSection === 'test_16p' ? 'active' : ''}`}
+              >
+                16 Personalities Test
+              </a>
+              <a
+                href="#test_high5"
+                className={`toc-subsection ${activeSection === 'test_high5' ? 'active' : ''}`}
+              >
+                HIGH5 Strengths Test
+              </a>
+              <a
+                href="#test_big5"
+                className={`toc-subsection ${activeSection === 'test_big5' ? 'active' : ''}`}
+              >
+                Big Five Personality Test
+              </a>
+              <a
+                href="#test_riasec"
+                className={`toc-subsection ${activeSection === 'test_riasec' ? 'active' : ''}`}
+              >
+                RIASEC Career Interest Test
+              </a>
+            </div>
             <a
               href="#section-core"
-              className={activeSection === 'section-core' ? 'active' : ''}
+              className={activeSection === 'section-core' || activeSection === 'core_identity_summary' ? 'active' : ''}
             >
               Section 2: Core Identity
             </a>
+            <div className="toc-subsections">
+              <a
+                href="#core_identity_summary"
+                className={`toc-subsection ${activeSection === 'core_identity_summary' ? 'active' : ''}`}
+              >
+                Core Identity Summary
+              </a>
+            </div>
             <a
               href="#section-domain"
-              className={activeSection === 'section-domain' ? 'active' : ''}
+              className={activeSection === 'section-domain' || activeSection.startsWith('domain_') ? 'active' : ''}
             >
               Section 3: Career Pathways
             </a>
+            <div className="toc-subsections">
+              <a
+                href="#domain_stem"
+                className={`toc-subsection ${activeSection === 'domain_stem' ? 'active' : ''}`}
+              >
+                STEM & Applied Sciences
+              </a>
+              <a
+                href="#domain_biology"
+                className={`toc-subsection ${activeSection === 'domain_biology' ? 'active' : ''}`}
+              >
+                Biology & Natural Sciences
+              </a>
+              <a
+                href="#domain_liberal_arts"
+                className={`toc-subsection ${activeSection === 'domain_liberal_arts' ? 'active' : ''}`}
+              >
+                Liberal Arts & Communications
+              </a>
+              <a
+                href="#domain_business"
+                className={`toc-subsection ${activeSection === 'domain_business' ? 'active' : ''}`}
+              >
+                Business & Economics
+              </a>
+              <a
+                href="#domain_interdisciplinary"
+                className={`toc-subsection ${activeSection === 'domain_interdisciplinary' ? 'active' : ''}`}
+              >
+                Interdisciplinary Systems Fields
+              </a>
+            </div>
             <a
               href="#section-overall"
-              className={activeSection === 'section-overall' ? 'active' : ''}
+              className={activeSection === 'section-overall' || activeSection === 'overall_insight' ? 'active' : ''}
             >
               Section 4: Overall Insight
             </a>
@@ -572,7 +638,7 @@ export const ReportViewer: React.FC = () => {
                     <h2>{category}</h2>
                   </div>
                 )}
-                <section className="report-section">
+                <section className="report-section" id={section.section_type}>
                   <h3 className="section-title">{getSectionTitle(section.section_type)}</h3>
                   {renderSectionContent(section)}
                 </section>
