@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS test_results (
   student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   test_name text NOT NULL,
   test_status text DEFAULT 'in_progress',
-  result_data jsonb NOT NULL DEFAULT '{}'::jsonb,
+  result_data jsonb DEFAULT '{}'::jsonb,
   completed_at timestamptz DEFAULT now(),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
