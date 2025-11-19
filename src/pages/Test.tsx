@@ -34,20 +34,26 @@ export const Test: React.FC<TestPageProps> = ({
   useEffect(() => {
     const initializeTestSession = async () => {
       let studentData = storage.getStudentData();
-      if (!studentData) {
-        const newData = storage.initializeStudent();
-        storage.setStudentData(newData);
-        studentData = newData;
 
-        // Create student record in Supabase
-        try {
-          await supabase.from('students').insert({
-            id: newData.uuid,
-            overall_status: newData.overallStatus,
-          });
-        } catch (error) {
-          console.error('Error creating student in Supabase:', error);
-        }
+      // Verify student exists and is registered
+      if (!studentData) {
+        alert('Session expired. Please restart from homepage.');
+        navigate('/');
+        return;
+      }
+
+      // Verify student exists in database before proceeding
+      const { data: studentExists, error: verifyError } = await supabase
+        .from('students')
+        .select('id')
+        .eq('id', studentData.uuid)
+        .maybeSingle();
+
+      if (!studentExists || verifyError) {
+        console.error('[Test] Student not found in database:', verifyError);
+        alert('Session expired. Please restart from homepage.');
+        navigate('/');
+        return;
       }
 
       const progress = studentData?.testProgress[testName];

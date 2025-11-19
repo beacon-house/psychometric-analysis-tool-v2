@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
-import { supabase } from '../lib/supabase';
 import type { StudentData, TestName } from '../types';
 
 export const useStudentData = () => {
@@ -11,28 +10,13 @@ export const useStudentData = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeStudent = async () => {
-      let data = storage.getStudentData();
-
-      if (!data) {
-        data = storage.initializeStudent();
-
-        // Create student record in Supabase
-        try {
-          await supabase.from('students').insert({
-            id: data.uuid,
-            overall_status: data.overallStatus,
-          });
-        } catch (error) {
-          console.error('Error creating student in Supabase:', error);
-        }
-      }
-
+    const loadStudentData = () => {
+      const data = storage.getStudentData();
       setStudentData(data);
       setIsLoading(false);
     };
 
-    initializeStudent();
+    loadStudentData();
   }, []);
 
   const updateProgress = (testName: TestName, currentQuestion: number, totalQuestions: number) => {
@@ -72,14 +56,6 @@ export const useStudentData = () => {
     }
   };
 
-  const updateContactInfo = (contactData: { studentName: string; parentEmail: string; parentWhatsapp: string }) => {
-    storage.updateContactInfo(contactData);
-
-    const updatedData = storage.getStudentData();
-    if (updatedData) {
-      setStudentData(updatedData);
-    }
-  };
 
   const getCompletedCount = (): number => {
     return storage.getCompletedTestCount();
@@ -95,7 +71,6 @@ export const useStudentData = () => {
     updateProgress,
     saveResponse,
     completeTest,
-    updateContactInfo,
     getCompletedCount,
     areAllTestsCompleted,
   };

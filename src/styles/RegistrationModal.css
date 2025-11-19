@@ -1,0 +1,395 @@
+/* Registration Modal - Modern UX Design with Visual Hierarchy
+ * Premium, bright, sleek design with proper alignment
+ * Follows design system from globals.css
+ */
+
+/* Overlay with enhanced backdrop */
+.registration-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(15, 23, 42, 0.92) 100%);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  overflow-y: auto;
+  animation: overlayFadeIn 0.4s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Content - Premium Card */
+.registration-modal-content {
+  background: var(--color-white);
+  border-radius: 1.5rem;
+  padding: 3rem 2.5rem;
+  max-width: 520px;
+  width: 100%;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 1px rgba(0, 0, 0, 0.05);
+  animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header Section - Centered with Icon */
+.registration-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.registration-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-accent) 100%);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+}
+
+.registration-icon {
+  color: var(--color-white);
+  width: 40px;
+  height: 40px;
+}
+
+/* Title - Bold and Engaging */
+.registration-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Subtitle - Clear Value Proposition */
+.registration-subtitle {
+  font-size: 1rem;
+  color: var(--color-slate-600);
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Form Styling */
+.registration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Labels - Clean and Modern */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-slate-700);
+  letter-spacing: -0.01em;
+}
+
+/* Input Fields - Larger, More Touch-Friendly */
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--color-slate-900);
+  border: 2px solid var(--color-slate-200);
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--color-white);
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: var(--color-slate-400);
+}
+
+.form-input:hover:not(:disabled) {
+  border-color: var(--color-slate-300);
+}
+
+.form-input:focus {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background-color: var(--color-white);
+}
+
+.form-input.input-error {
+  border-color: var(--color-error);
+  background-color: rgba(239, 68, 68, 0.02);
+}
+
+.form-input.input-error:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.form-input:disabled {
+  background-color: var(--color-slate-50);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Phone Input Container */
+.phone-input-container {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.country-code-input {
+  width: 90px;
+  flex-shrink: 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.phone-number-input {
+  flex: 1;
+}
+
+/* Error Messages */
+.error-message {
+  font-size: 0.8125rem;
+  color: var(--color-error);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* CTA Button - Exciting and Action-Oriented */
+.registration-cta-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.registration-cta-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.registration-cta-button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.registration-cta-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+}
+
+.registration-cta-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+}
+
+.registration-cta-button:disabled {
+  background: var(--color-slate-300);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.registration-cta-button svg {
+  transition: transform 0.3s ease;
+}
+
+.registration-cta-button:hover:not(:disabled) svg {
+  transform: translateX(4px);
+}
+
+/* Button Spinner */
+.button-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Privacy Note - Reassuring */
+.registration-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--color-slate-50);
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.registration-privacy svg {
+  color: var(--color-primary-light);
+  flex-shrink: 0;
+}
+
+.registration-privacy span {
+  font-size: 0.8125rem;
+  color: var(--color-slate-600);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Tablet Responsive */
+@media (max-width: 768px) {
+  .registration-modal-content {
+    padding: 2.5rem 2rem;
+  }
+
+  .registration-title {
+    font-size: 1.75rem;
+  }
+
+  .registration-subtitle {
+    font-size: 0.9375rem;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .registration-modal-overlay {
+    padding: 1rem;
+  }
+
+  .registration-modal-content {
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .registration-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1.25rem;
+  }
+
+  .registration-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .registration-title {
+    font-size: 1.5rem;
+  }
+
+  .registration-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .registration-header {
+    margin-bottom: 2rem;
+  }
+
+  .form-input {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .registration-cta-button {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  /* Stack phone inputs on mobile */
+  .phone-input-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .country-code-input {
+    width: 100%;
+  }
+
+  .phone-number-input {
+    width: 100%;
+  }
+
+  .registration-privacy {
+    padding: 0.875rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.375rem;
+  }
+
+  .registration-privacy span {
+    font-size: 0.75rem;
+  }
+}
+
+/* Accessibility - Focus visible */
+.form-input:focus-visible,
+.registration-cta-button:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
