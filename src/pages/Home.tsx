@@ -93,16 +93,29 @@ export const Home: React.FC = () => {
     try {
       const uuid = crypto.randomUUID();
 
+      console.log('[Home] Attempting registration with UUID:', uuid);
+      console.log('[Home] Form data:', formData);
+
       // Create in database FIRST
-      const { error } = await supabase.from('students').insert({
+      const { data, error } = await supabase.from('students').insert({
         id: uuid,
         student_name: formData.studentName,
         parent_email: formData.parentEmail,
         parent_whatsapp: formData.parentWhatsapp,
         overall_status: 'test_in_progress',
-      });
+      }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Home] Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+        throw error;
+      }
+
+      console.log('[Home] Registration successful:', data);
 
       // Only after DB success, save to localStorage
       storage.initializeRegisteredStudent(
@@ -116,9 +129,10 @@ export const Home: React.FC = () => {
 
       // Force re-render by reloading the page
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Home] Registration failed:', error);
-      alert('Unable to register. Please check your connection and try again.');
+      const errorMessage = error?.message || 'Unknown error';
+      alert(`Registration failed: ${errorMessage}\n\nPlease check the console for details.`);
     } finally {
       setIsSubmitting(false);
     }
