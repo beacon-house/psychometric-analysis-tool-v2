@@ -26,11 +26,37 @@ export const storage = {
     }
   },
 
-  // Initialize new student session with UUID
+  // Initialize new student session with UUID (legacy method - kept for backward compatibility)
   initializeStudent(): StudentData {
     const uuid = crypto.randomUUID();
     const data: StudentData = {
       uuid,
+      verified: false,
+      overallStatus: 'test_in_progress',
+      testProgress: {
+        '16Personalities': undefined,
+        'HIGH5': undefined,
+        'Big Five': undefined,
+        'RIASEC': undefined,
+      },
+    };
+    this.setStudentData(data);
+    return data;
+  },
+
+  // Initialize registered student with upfront contact information
+  initializeRegisteredStudent(
+    studentName: string,
+    parentEmail: string,
+    parentWhatsapp: string,
+    uuid: string
+  ): StudentData {
+    const data: StudentData = {
+      uuid,
+      verified: true,
+      studentName,
+      parentEmail,
+      parentWhatsapp,
       overallStatus: 'test_in_progress',
       testProgress: {
         '16Personalities': undefined,
@@ -82,17 +108,6 @@ export const storage = {
     }
   },
 
-  // Update contact information
-  updateContactInfo(contactData: { studentName: string; parentEmail: string; parentWhatsapp: string }): void {
-    const data = this.getStudentData();
-    if (!data) return;
-
-    data.studentName = contactData.studentName;
-    data.parentEmail = contactData.parentEmail;
-    data.parentWhatsapp = contactData.parentWhatsapp;
-    data.overallStatus = 'reports_generated';
-    this.setStudentData(data);
-  },
 
   // Check if all tests are completed
   areAllTestsCompleted(): boolean {

@@ -1,0 +1,92 @@
+/* Registration modal styling with premium design
+ * Non-dismissible modal that appears on first visit for upfront registration
+ * Reuses ContactModal structure with phone number split layout
+ */
+
+.registration-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.registration-modal-content {
+  background: var(--color-white);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Phone number split layout */
+.phone-input-container {
+  display: flex;
+  gap: 8px;
+}
+
+.country-code-input {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.phone-number-input {
+  flex: 1;
+}
+
+/* Mobile: stack phone inputs vertically on small screens */
+@media (max-width: 480px) {
+  .phone-input-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .country-code-input {
+    width: 100%;
+  }
+
+  .phone-number-input {
+    width: 100%;
+  }
+}
+
+/* Responsive adjustments - match ContactModal */
+@media (max-width: 768px) {
+  .registration-modal-content {
+    padding: 1.25rem;
+    margin: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .registration-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .registration-modal-content {
+    padding: 1rem;
+  }
+}

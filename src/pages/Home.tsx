@@ -6,9 +6,10 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { TestCard } from '../components/TestCard';
 import { ProgressIndicator } from '../components/ProgressIndicator';
-import { ContactModal } from '../components/ContactModal';
+import { RegistrationModal } from '../components/RegistrationModal';
 import { useStudentData } from '../hooks/useStudentData';
 import { supabase } from '../lib/supabase';
+import { storage } from '../lib/storage';
 import { TEST_METADATA, TEST_ORDER } from '../lib/tests';
 import type { TestInfo, TestName, ContactFormData, TestStatus } from '../types';
 import '../styles/Home.css';
@@ -18,22 +19,21 @@ export const Home: React.FC = () => {
   const {
     studentData,
     isLoading,
-    updateContactInfo,
     getCompletedCount,
-    areAllTestsCompleted,
   } = useStudentData();
-
-  const [showContactModal, setShowContactModal] = useState(false);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasShownAutoPopup, setHasShownAutoPopup] = useState(false);
 
-  // Auto-popup modal once when all tests are completed (per session)
+  // Check if student is registered on mount
   useEffect(() => {
-    if (!isLoading && areAllTestsCompleted() && !studentData?.parentEmail && !hasShownAutoPopup) {
-      setShowContactModal(true);
-      setHasShownAutoPopup(true);
+    if (!isLoading) {
+      if (studentData?.verified) {
+        setShowRegistrationModal(false);
+      } else {
+        setShowRegistrationModal(true);
+      }
     }
-  }, [isLoading, studentData, areAllTestsCompleted, hasShownAutoPopup]);
+  }, [isLoading, studentData]);
 
   const getTestStatus = (testName: TestName): TestStatus => {
     if (!studentData) return 'available';
@@ -88,53 +88,37 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleContactSubmit = async (formData: ContactFormData) => {
-    if (!studentData) return;
-
+  const handleRegistration = async (formData: ContactFormData) => {
     setIsSubmitting(true);
-
     try {
-      // Update local storage
-      updateContactInfo(formData);
+      const uuid = crypto.randomUUID();
 
-      // Save to Supabase
-      const { error: studentError } = await supabase
-        .from('students')
-        .upsert({
-          id: studentData.uuid,
-          student_name: formData.studentName,
-          parent_email: formData.parentEmail,
-          parent_whatsapp: formData.parentWhatsapp,
-          overall_status: 'reports_generated',
-          submission_timestamp: new Date().toISOString(),
-        });
+      // Create in database FIRST
+      const { error } = await supabase.from('students').insert({
+        id: uuid,
+        student_name: formData.studentName,
+        parent_email: formData.parentEmail,
+        parent_whatsapp: formData.parentWhatsapp,
+        overall_status: 'test_in_progress',
+      });
 
-      if (studentError) throw studentError;
+      if (error) throw error;
 
-      // Trigger webhook for Make.com
-      const webhookUrl = import.meta.env.VITE_WEBHOOK_URL;
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            studentId: studentData.uuid,
-            studentName: formData.studentName,
-            parentEmail: formData.parentEmail,
-            parentWhatsapp: formData.parentWhatsapp,
-            completedTests: TEST_ORDER,
-            timestamp: new Date().toISOString(),
-          }),
-        });
-      }
-
-      setShowContactModal(false);
-      alert(
-        'Your Report Will be generated, book a FREE session with a counsellor, to go through your customised career report.'
+      // Only after DB success, save to localStorage
+      storage.initializeRegisteredStudent(
+        formData.studentName,
+        formData.parentEmail,
+        formData.parentWhatsapp,
+        uuid
       );
+
+      setShowRegistrationModal(false);
+
+      // Force re-render by reloading the page
+      window.location.reload();
     } catch (error) {
-      console.error('Error submitting contact information:', error);
-      alert('There was an error submitting your information. Please try again.');
+      console.error('[Home] Registration failed:', error);
+      alert('Unable to register. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -167,17 +151,6 @@ export const Home: React.FC = () => {
 
         <ProgressIndicator completed={completedCount} total={4} />
 
-        {areAllTestsCompleted() && !studentData?.parentEmail && (
-          <div className="career-recommendations-section">
-            <button
-              className="career-recommendations-button"
-              onClick={() => setShowContactModal(true)}
-            >
-              Get Your Personalised Career Recommendations
-            </button>
-          </div>
-        )}
-
         <div className="tests-grid">
           {tests.map(test => {
             const progress = studentData?.testProgress[test.id];
@@ -195,9 +168,10 @@ export const Home: React.FC = () => {
         </div>
       </main>
 
-      <ContactModal
-        isOpen={showContactModal && !isSubmitting}
-        onSubmit={handleContactSubmit}
+      <RegistrationModal
+        isOpen={showRegistrationModal}
+        onSubmit={handleRegistration}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

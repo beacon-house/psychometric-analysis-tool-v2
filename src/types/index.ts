@@ -42,6 +42,7 @@ export interface TestProgress {
 
 export interface StudentData {
   uuid: string;
+  verified: boolean;
   studentName?: string;
   parentEmail?: string;
   parentWhatsapp?: string;
