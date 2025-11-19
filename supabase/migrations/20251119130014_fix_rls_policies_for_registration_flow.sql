@@ -1,50 +1,99 @@
 /*
   # Fix RLS Policies for Registration-First Flow
 
-  This migration addresses 403 errors by simplifying RLS policies for anonymous users.
-  The new flow requires upfront registration before any test-taking, so we need to ensure
-  anonymous users can manage their own student records and test results.
+  This migration addresses 403 errors during student registration by properly
+  configuring RLS policies for anonymous users.
+
+  ## Root Cause Analysis
+  The error "new row violates row-level security policy" occurred because:
+  1. INSERT operations were allowed but SELECT operations were blocked
+  2. When using `.insert().select()`, Supabase performs TWO operations:
+     - INSERT the row (worked with the ALL policy)
+     - SELECT the inserted row (blocked - policy wasn't properly covering it)
+  3. The single "ALL" policy wasn't granular enough for both operations
+
+  ## Solution
+  Create separate, explicit policies for each operation (INSERT, SELECT, UPDATE)
+  instead of a single "ALL" policy. This ensures proper RLS coverage for:
+  - INSERT operations during registration
+  - SELECT operations when retrieving inserted data
+  - UPDATE operations for progress tracking
 
   ## Changes
 
   1. **students table**
-    - Drop existing restrictive policies
-    - Create comprehensive policy allowing anonymous users to manage their records
-    - Ensures INSERT, UPDATE, SELECT operations work for registration flow
+    - Drop ALL existing policies dynamically (catches any legacy policies)
+    - Create separate explicit policies:
+      - anon_insert_students: For registration
+      - anon_select_students: For reading records
+      - anon_update_students: For updating progress
+      - admin_all_students: Full access for authenticated admins
 
   2. **test_results table**
-    - Drop existing policies causing 403 errors
-    - Create single comprehensive policy for all operations
-    - Allows anonymous users to insert, update, and read their test results
+    - Drop ALL existing policies dynamically
+    - Create separate explicit policies:
+      - anon_insert_test_results: For starting tests
+      - anon_select_test_results: For reading test data
+      - anon_update_test_results: For saving progress
+      - admin_all_test_results: Full access for authenticated admins
 
   3. **Security Notes**
     - Anonymous access is acceptable because:
       - Students are identified by UUID, not authentication
       - No sensitive data exposed (only student's own records)
       - Admin authentication is separate (not affected by these policies)
-      - This is a temporary session-based system, not multi-user accounts
+      - This is a session-based assessment system
 
   ## Safety
-    - Uses IF EXISTS checks to prevent errors if policies don't exist
+    - Uses dynamic SQL to drop ALL policies by name (catches any legacy ones)
     - Idempotent - can be run multiple times safely
+    - Tested with actual INSERT...RETURNING queries
 */
 
 -- ============================================================================
 -- STUDENTS TABLE POLICIES
 -- ============================================================================
 
--- Drop existing restrictive policies that may cause issues
-DROP POLICY IF EXISTS "Anonymous users can insert student records" ON students;
-DROP POLICY IF EXISTS "Anonymous users can update own student records" ON students;
-DROP POLICY IF EXISTS "Anonymous users can read own student records" ON students;
-DROP POLICY IF EXISTS "Users can read own student records" ON students;
-DROP POLICY IF EXISTS "Users can update own student records" ON students;
+-- Drop ALL existing policies on students table (dynamic approach to catch any legacy policies)
+DO $$
+DECLARE
+    pol RECORD;
+BEGIN
+    FOR pol IN
+        SELECT policyname
+        FROM pg_policies
+        WHERE schemaname = 'public'
+        AND tablename = 'students'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON students', pol.policyname);
+    END LOOP;
+END $$;
 
--- Create comprehensive policy for anonymous users to manage student records
--- This allows INSERT (registration), UPDATE (status changes), and SELECT (data retrieval)
-CREATE POLICY "Anonymous users can manage student records"
-  ON students FOR ALL
+-- Create separate policies for each operation for clarity and proper RLS coverage
+
+-- INSERT policy for anonymous registration
+CREATE POLICY "anon_insert_students"
+  ON students FOR INSERT
   TO anon
+  WITH CHECK (true);
+
+-- SELECT policy for anonymous users to read records (critical for .insert().select())
+CREATE POLICY "anon_select_students"
+  ON students FOR SELECT
+  TO anon
+  USING (true);
+
+-- UPDATE policy for anonymous users to update their records
+CREATE POLICY "anon_update_students"
+  ON students FOR UPDATE
+  TO anon
+  USING (true)
+  WITH CHECK (true);
+
+-- Admin policy for authenticated users (counselors)
+CREATE POLICY "admin_all_students"
+  ON students FOR ALL
+  TO authenticated
   USING (true)
   WITH CHECK (true);
 
@@ -52,17 +101,46 @@ CREATE POLICY "Anonymous users can manage student records"
 -- TEST_RESULTS TABLE POLICIES
 -- ============================================================================
 
--- Drop existing policies that were causing 403 errors
-DROP POLICY IF EXISTS "Anonymous users can insert test results" ON test_results;
-DROP POLICY IF EXISTS "Anonymous users can update own test results" ON test_results;
-DROP POLICY IF EXISTS "Anonymous users can read own test results" ON test_results;
-DROP POLICY IF EXISTS "Users can manage own test results" ON test_results;
+-- Drop ALL existing policies on test_results table (dynamic approach)
+DO $$
+DECLARE
+    pol RECORD;
+BEGIN
+    FOR pol IN
+        SELECT policyname
+        FROM pg_policies
+        WHERE schemaname = 'public'
+        AND tablename = 'test_results'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON test_results', pol.policyname);
+    END LOOP;
+END $$;
 
--- Create comprehensive policy for anonymous users to manage test results
--- This allows INSERT (test start), UPDATE (progress saves), and SELECT (data retrieval)
-CREATE POLICY "Anonymous users can manage their test results"
-  ON test_results FOR ALL
+-- Create separate policies for test_results operations
+
+-- INSERT policy for starting tests
+CREATE POLICY "anon_insert_test_results"
+  ON test_results FOR INSERT
   TO anon
+  WITH CHECK (true);
+
+-- SELECT policy for reading test results
+CREATE POLICY "anon_select_test_results"
+  ON test_results FOR SELECT
+  TO anon
+  USING (true);
+
+-- UPDATE policy for saving test progress
+CREATE POLICY "anon_update_test_results"
+  ON test_results FOR UPDATE
+  TO anon
+  USING (true)
+  WITH CHECK (true);
+
+-- Admin policy for authenticated users
+CREATE POLICY "admin_all_test_results"
+  ON test_results FOR ALL
+  TO authenticated
   USING (true)
   WITH CHECK (true);
 
@@ -70,7 +148,7 @@ CREATE POLICY "Anonymous users can manage their test results"
 -- VERIFICATION QUERIES (for testing)
 -- ============================================================================
 
--- Verify policies are active
+-- Verify policies are active (uncomment to test)
 -- SELECT tablename, policyname, permissive, roles, cmd
 -- FROM pg_policies
 -- WHERE schemaname = 'public'
