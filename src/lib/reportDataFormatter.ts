@@ -169,12 +169,12 @@ export function createTestDataSummary(formattedData: FormattedTestResults): stri
   if (test16Personalities) {
     summary += `### 16 Personalities Test\n`;
     summary += `- Personality Type: ${test16Personalities.personalityType} (${test16Personalities.fullCode})\n`;
-    summary += `- Dimensions:\n`;
-    summary += `  - Extraversion: ${test16Personalities.dimensions.extraversion.normalized}% ${test16Personalities.dimensions.extraversion.preference}\n`;
-    summary += `  - Sensing: ${test16Personalities.dimensions.sensing.normalized}% ${test16Personalities.dimensions.sensing.preference}\n`;
-    summary += `  - Thinking: ${test16Personalities.dimensions.thinking.normalized}% ${test16Personalities.dimensions.thinking.preference}\n`;
-    summary += `  - Judging: ${test16Personalities.dimensions.judging.normalized}% ${test16Personalities.dimensions.judging.preference}\n`;
-    summary += `  - Assertive: ${test16Personalities.dimensions.assertive.normalized}% ${test16Personalities.dimensions.assertive.preference}\n\n`;
+    summary += `- Dimension Results (showing the student's preference and raw score on each dimension):\n`;
+    summary += `  - Extraversion/Introversion dimension: Score ${test16Personalities.dimensions.extraversion.normalized}% -> Preference: ${test16Personalities.dimensions.extraversion.preference}\n`;
+    summary += `  - Sensing/Intuition dimension: Score ${test16Personalities.dimensions.sensing.normalized}% -> Preference: ${test16Personalities.dimensions.sensing.preference}\n`;
+    summary += `  - Thinking/Feeling dimension: Score ${test16Personalities.dimensions.thinking.normalized}% -> Preference: ${test16Personalities.dimensions.thinking.preference}\n`;
+    summary += `  - Judging/Perceiving dimension: Score ${test16Personalities.dimensions.judging.normalized}% -> Preference: ${test16Personalities.dimensions.judging.preference}\n`;
+    summary += `  - Assertive/Turbulent dimension: Score ${test16Personalities.dimensions.assertive.normalized}% -> Preference: ${test16Personalities.dimensions.assertive.preference}\n\n`;
   }
 
   if (testHigh5) {

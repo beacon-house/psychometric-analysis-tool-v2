@@ -1,2 +1,9 @@
 node_modules/
 .env
+.env.local
+AGENTS.md
+dist/
+.context/
+supabase/.branches/
+supabase/.temp/
+supabase/migrations/supabase/

@@ -36,10 +36,10 @@ Please provide a comprehensive summary with the following sections:
 
 1. **What This Test Measures**: Explain what the 16 Personalities test measures in 2-3 sentences (focus on the five dimensions: Mind, Energy, Nature, Tactics, Identity)
 
-2. **Your Results**: Present the student's results in a clear, tabular format showing:
-   - Each dimension (Mind, Energy, Nature, Tactics, Identity)
-   - Their score and preference
-   - Clarity level
+2. **Your Results**: Present the student's results in a clear table with 3 columns:
+   - PREFERENCE: The student's actual preference (e.g., Introverted, Intuitive, Thinking, Perceiving, Turbulent). Use the student's preference as the row label, NOT the dimension name.
+   - SCORE: The raw percentage score.
+   - INTERPRETATION: A contextualized 1-2 sentence description that describes both the preference and accounts for the score strength. For example, a 43% Extraversion score means the student is Introverted with moderate intensity, so the interpretation should reflect moderate introversion rather than extreme introversion. A score near 50% indicates a balanced or borderline tendency.
 
 3. **What This Means For You**: Provide actionable, user-friendly insights (3-4 paragraphs) explaining:
    - How this personality type typically approaches work and learning
@@ -53,7 +53,7 @@ Format your response as structured JSON with this schema:
     "personalityType": "Four letter code",
     "variant": "Assertive/Turbulent",
     "dimensions": [
-      {"name": "Mind", "score": "X%", "preference": "Extraverted/Introverted", "clarity": "Clear"},
+      {"preference": "Introverted", "score": "X%", "interpretation": "Contextualized description of what this score means"},
       ...
     ]
   },
@@ -177,7 +177,13 @@ Format your response as structured JSON with this schema:
  * Domain Analysis Prompt Template
  * Used for all 5 domain analysis sections with domain-specific context
  */
-export const DOMAIN_ANALYSIS_PROMPT = `You are an expert career counselor analyzing a student's fit for the {{DOMAIN_NAME}} domain.
+export const DOMAIN_ANALYSIS_PROMPT = `You are an expert career counselor analyzing a student's alignment with the {{DOMAIN_NAME}} domain.
+
+IMPORTANT GUARDRAILS:
+- Psychometric results indicate preferences and tendencies, NOT fixed abilities or predetermined destinies. A lower score in a dimension does NOT mean a student is "unsuited" for a domain.
+- Do NOT exclude career domains based on a single test score. Every domain contains diverse roles that can accommodate different personality profiles.
+- Lower alignment means the student may approach this domain differently or may need to explore more intentionally -- it does NOT mean they should avoid it entirely.
+- Always provide possibilities and pathways within each domain, even for areas with lower alignment scores.
 
 Domain Description: {{DOMAIN_DESCRIPTION}}
 
@@ -186,21 +192,21 @@ Student Test Results:
 
 Based on the student's comprehensive test results, provide:
 
-1. **Overall Fit Assessment**: Brief assessment (2-3 sentences) of how well-suited this student is for the {{DOMAIN_NAME}} domain
+1. **Overall Alignment Assessment**: Brief assessment (2-3 sentences) of how the student's profile aligns with the {{DOMAIN_NAME}} domain. Use moderate, non-deterministic language. Avoid saying "not suited" or "poor fit." Instead, describe alignment as "stronger", "moderate", or "may require a different approach." Acknowledge that psychometric results are indicators, not verdicts.
 
-2. **Relatively Stronger Areas**: Identify 3-4 specific sub-fields or specializations within this domain where the student's profile suggests strong potential
+2. **Relatively Stronger Areas**: Identify 3-4 specific sub-fields or specializations within this domain where the student's profile suggests stronger alignment or natural affinity.
 
-3. **Areas to Explore**: Identify 2-3 areas within this domain that might be more challenging but still worth exploring for growth
+3. **Areas to Explore (With Possibilities)**: Identify 2-3 areas within this domain that may be less aligned but still contain viable and rewarding pathways. For each, explicitly describe how the student could approach this area successfully despite lower alignment scores. Do NOT frame these as "challenging" or "not recommended" -- frame them as "worth exploring with the right approach." Provide specific role types or strategies that could bridge the gap between their profile and the domain requirements.
 
 Format your response as structured JSON with this schema:
 {
-  "fitAssessment": "Overall fit assessment text",
+  "fitAssessment": "Overall alignment assessment text using moderate, non-deterministic language",
   "strongerAreas": [
-    {"area": "Sub-field name", "rationale": "Why this is a strong fit based on test results"},
+    {"area": "Sub-field name", "rationale": "Why this aligns well with the student's profile"},
     ...
   ],
   "areasToExplore": [
-    {"area": "Sub-field name", "rationale": "Why this could be valuable to explore"},
+    {"area": "Sub-field name", "rationale": "Why this is still worth exploring and how the student could approach it successfully, including specific roles or strategies"},
     ...
   ]
 }`;

@@ -109,32 +109,36 @@ export const Results16Personalities: React.FC = () => {
             <h2 className="section-title">Dimension Scores</h2>
 
             <div className="dimension-list">
-            {Object.entries(dimensionScores).map(([dimension, score]) => (
-              <div key={dimension} className="dimension-item">
-                <div className="dimension-header">
-                  <span className="dimension-name">{dimension}</span>
-                  <span className="dimension-value">
-                    {score.normalized}% {score.preference}
-                  </span>
-                </div>
+            {Object.entries(dimensionScores).map(([dimension, score]) => {
+              const displayWidth = score.normalized >= 50 ? score.normalized : 100 - score.normalized;
 
-                <div className="dimension-bar-container">
-                  <div className="dimension-bar-track">
-                    <div
-                      className={`dimension-bar-fill ${score.normalized >= 50 ? 'dominant' : 'recessive'}`}
-                      style={{ width: `${score.normalized}%` }}
-                    />
-                    <div className="dimension-bar-midpoint" />
+              return (
+                <div key={dimension} className="dimension-item">
+                  <div className="dimension-header">
+                    <span className="dimension-name">{score.preference}</span>
+                    <span className="dimension-value">
+                      {score.normalized}%
+                    </span>
+                  </div>
+
+                  <div className="dimension-bar-container">
+                    <div className="dimension-bar-track">
+                      <div
+                        className="dimension-bar-fill dominant"
+                        style={{ width: `${displayWidth}%` }}
+                      />
+                      <div className="dimension-bar-midpoint" />
+                    </div>
+                  </div>
+
+                  <div className="dimension-clarity">
+                    <span className={`clarity-badge ${score.clarityLevel.toLowerCase()}`}>
+                      {score.clarityLevel} preference ({score.clarityPercentage}%)
+                    </span>
                   </div>
                 </div>
-
-                <div className="dimension-clarity">
-                  <span className={`clarity-badge ${score.clarityLevel.toLowerCase()}`}>
-                    {score.clarityLevel} preference ({score.clarityPercentage}%)
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             </div>
           </div>
 

@@ -282,19 +282,32 @@ function createTestDataSummary(formattedData: FormattedTestData): string {
   const { test16Personalities, testHigh5, testBigFive, testRiasec } =
     formattedData;
 
+  const dimensionDisplayNames: Record<string, string> = {
+    'Extraversion': 'Energy Orientation',
+    'Sensing': 'Information Style',
+    'Thinking': 'Decision Style',
+    'Judging': 'Structure Preference',
+    'Assertive': 'Self-Regulation Style',
+  };
+
   let summary = "## Student Test Results\n\n";
 
   if (test16Personalities) {
     summary += `### 16 Personalities Test\n`;
     summary += `- Personality Type: ${test16Personalities.personalityType?.fourLetterCode} (${test16Personalities.personalityType?.fullCode})\n`;
-    summary += `- Dimensions:\n`;
+    summary += `- Dimension Results (all scores show strength in the preferred trait, always 50%+):\n`;
     const dims = test16Personalities.dimensionScores;
     if (dims) {
-      summary += `  - Extraversion: ${dims.Extraversion?.normalized}% ${dims.Extraversion?.preference}\n`;
-      summary += `  - Sensing: ${dims.Sensing?.normalized}% ${dims.Sensing?.preference}\n`;
-      summary += `  - Thinking: ${dims.Thinking?.normalized}% ${dims.Thinking?.preference}\n`;
-      summary += `  - Judging: ${dims.Judging?.normalized}% ${dims.Judging?.preference}\n`;
-      summary += `  - Assertive: ${dims.Assertive?.normalized}% ${dims.Assertive?.preference}\n\n`;
+      const dimKeys = ['Extraversion', 'Sensing', 'Thinking', 'Judging', 'Assertive'];
+      dimKeys.forEach((key) => {
+        const dimData = (dims as any)[key];
+        if (dimData) {
+          const displayScore = dimData.normalized >= 50 ? dimData.normalized : 100 - dimData.normalized;
+          const displayName = dimensionDisplayNames[key] || key;
+          summary += `  - ${displayName}: Score ${displayScore}% → Preference: ${dimData.preference}\n`;
+        }
+      });
+      summary += '\n';
     }
   }
 
@@ -390,8 +403,13 @@ Provide a CONCISE summary with exactly these sections:
 
 1. **What This Test Measures**: 2-3 sentences maximum explaining the five dimensions.
 
-2. **Results Table**: Present results in this exact 3-column format:
-   | Dimension | Score | Preference |
+2. **Results Table**: Present results in this exact 4-column format:
+   | Dimension | Preference | Score | Interpretation |
+   CRITICAL:
+   - Dimension column: Use descriptive dimension names (Energy Orientation, Information Style, Decision Style, Structure Preference, Self-Regulation Style)
+   - Preference column: The student's actual preference (e.g., "Extraverted", "Intuitive", "Feeling", "Judging", "Turbulent")
+   - Score column: ALWAYS 50% or higher. This represents the strength of the preference, NOT the raw dimension score. If the raw dimension score is below 50%, the student prefers the opposite trait, so display (100 - raw_score)% to show the strength of their actual preference.
+   - Interpretation column: Contextualize both the preference and the score strength (e.g., "Moderate extraversion at 57%; enjoys social interaction but may need time alone")
 
 3. **What This Means For You**: ONE paragraph only (4-5 sentences maximum) explaining how this personality type shows up.
    - NO cross-referencing to other tests
@@ -406,7 +424,7 @@ Format your response as structured JSON with this schema:
   "results": {
     "personalityType": "Type code (e.g., INFJ-T)",
     "dimensions": [
-      {"name": "Extraversion", "score": "46%", "preference": "Introverted"}
+      {"dimension": "Energy Orientation", "preference": "Extraverted", "score": "57%", "interpretation": "Moderate extraversion; enjoys social interaction but may need time alone"}
     ]
   },
   "insights": "Single paragraph in third person (4-5 sentences max) about what this means for the student"
@@ -548,7 +566,13 @@ function getDomainPrompt(domain: string, testData: string): string {
 
   const info = domainInfo[domain];
 
-  return `You are an expert career counselor analyzing the student's fit for the ${info.name} domain.
+  return `You are an expert career counselor analyzing the student's alignment with the ${info.name} domain.
+
+IMPORTANT GUARDRAILS:
+- Psychometric results indicate preferences and tendencies, NOT fixed abilities or predetermined destinies. A lower score in a dimension does NOT mean a student is "unsuited" for a domain.
+- Do NOT exclude career domains based on a single test score. Every domain contains diverse roles that can accommodate different personality profiles.
+- Lower alignment means the student may approach this domain differently or may need to explore more intentionally -- it does NOT mean they should avoid it entirely.
+- Always provide possibilities and pathways within each domain, even for areas with lower alignment scores.
 
 IMPORTANT: Use third person only (the student, they, them). NEVER use second person (you, your).
 
@@ -562,14 +586,14 @@ Based on the student's test results, provide:
 1. **Relatively Stronger Areas**: List 3-7 specific majors/fields with brief evidence-based rationale (10-15 words each)
    Format: "**Field Name** – brief rationale citing specific test evidence"
 
-2. **Explore with Caution**: List 3-6 specific majors/fields with brief explanation of gaps (10-15 words each)
-   Format: "**Field Name** – brief rationale explaining why it's a weaker fit"
+2. **Areas to Explore (With Possibilities)**: List 3-6 specific majors/fields that may be less aligned but still contain viable pathways. For each, describe how the student could approach it successfully despite lower alignment scores. Frame these as "worth exploring with the right approach." Provide specific role types or strategies. Do NOT frame as "challenging" or "not recommended."
+   Format: "**Field Name** – brief rationale including how the student could succeed here"
 
 CRITICAL REQUIREMENTS:
 - Use BULLET FORMAT ONLY, not prose paragraphs
 - Cite specific test scores and strength names in rationales
-- Be honest about poor fits
 - NO "Overall Fit Assessment" paragraph or section
+- NEVER use language like "poor fit", "unsuited", "not recommended", or "avoid"
 - Each rationale must be 10-15 words maximum
 
 Format your response as structured JSON with this schema:
@@ -577,8 +601,8 @@ Format your response as structured JSON with this schema:
   "strongerAreas": [
     {"field": "Human Resources Management", "rationale": "high Agreeableness (80%) + Social (26) + Coach for people-focused roles"}
   ],
-  "weakerAreas": [
-    {"field": "Theoretical Physics", "rationale": "low Investigative (14) makes abstract mathematical modeling less aligned"}
+  "areasToExplore": [
+    {"field": "Theoretical Physics", "rationale": "low Investigative (14) but applied physics or engineering physics could align well"}
   ]
 }`;
 }
