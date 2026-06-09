@@ -259,14 +259,14 @@ function createTestDataSummary(formattedData: FormattedTestData): string {
   if (test16Personalities) {
     summary += `### 16 Personalities Test\n`;
     summary += `- Personality Type: ${test16Personalities.personalityType?.fourLetterCode} (${test16Personalities.personalityType?.fullCode})\n`;
-    summary += `- Dimensions:\n`;
+    summary += `- Dimension Results (showing the student's preference and raw score on each dimension):\n`;
     const dims = test16Personalities.dimensionScores;
     if (dims) {
-      summary += `  - Extraversion: ${dims.Extraversion?.normalized}% ${dims.Extraversion?.preference}\n`;
-      summary += `  - Sensing: ${dims.Sensing?.normalized}% ${dims.Sensing?.preference}\n`;
-      summary += `  - Thinking: ${dims.Thinking?.normalized}% ${dims.Thinking?.preference}\n`;
-      summary += `  - Judging: ${dims.Judging?.normalized}% ${dims.Judging?.preference}\n`;
-      summary += `  - Assertive: ${dims.Assertive?.normalized}% ${dims.Assertive?.preference}\n\n`;
+      summary += `  - Extraversion/Introversion dimension: Score ${dims.Extraversion?.normalized}% → Preference: ${dims.Extraversion?.preference}\n`;
+      summary += `  - Sensing/Intuition dimension: Score ${dims.Sensing?.normalized}% → Preference: ${dims.Sensing?.preference}\n`;
+      summary += `  - Thinking/Feeling dimension: Score ${dims.Thinking?.normalized}% → Preference: ${dims.Thinking?.preference}\n`;
+      summary += `  - Judging/Perceiving dimension: Score ${dims.Judging?.normalized}% → Preference: ${dims.Judging?.preference}\n`;
+      summary += `  - Assertive/Turbulent dimension: Score ${dims.Assertive?.normalized}% → Preference: ${dims.Assertive?.preference}\n\n`;
     }
   }
 

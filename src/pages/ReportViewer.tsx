@@ -288,17 +288,17 @@ export const ReportViewer: React.FC = () => {
             <table className="results-table">
               <thead>
                 <tr>
-                  <th>Dimension</th>
-                  <th>Score</th>
                   <th>Preference</th>
+                  <th>Score</th>
+                  <th>Interpretation</th>
                 </tr>
               </thead>
               <tbody>
                 {content.results.dimensions.map((dim: any, idx: number) => (
                   <tr key={idx}>
-                    <td>{dim.name}</td>
+                    <td>{dim.preference || dim.name}</td>
                     <td>{dim.score}</td>
-                    <td>{dim.preference || dim.interpretation}</td>
+                    <td>{dim.interpretation || dim.preference}</td>
                   </tr>
                 ))}
               </tbody>
@@ -388,7 +388,7 @@ export const ReportViewer: React.FC = () => {
       (rec) => rec.domain === domain && rec.section === 'strongerAreas' && rec.is_custom
     );
     const customWeaker = selectedRecommendations.filter(
-      (rec) => rec.domain === domain && rec.section === 'weakerAreas' && rec.is_custom
+      (rec) => rec.domain === domain && (rec.section === 'areasToExplore' || rec.section === 'weakerAreas') && rec.is_custom
     );
 
     const renderRecommendationItem = (area: any, section: string, idx: number) => {
@@ -512,15 +512,15 @@ export const ReportViewer: React.FC = () => {
           </ul>
           {renderAddCustomButton('strongerAreas')}
         </div>
-        <div className="domain-section explore-with-caution-areas">
-          <h4>Explore with Caution</h4>
+        <div className="domain-section areas-to-explore">
+          <h4>Areas to Explore</h4>
           <ul className="areas-list-bullets">
-            {content.weakerAreas?.map((area: any, idx: number) =>
-              renderRecommendationItem(area, 'weakerAreas', idx)
+            {(content.areasToExplore || content.weakerAreas)?.map((area: any, idx: number) =>
+              renderRecommendationItem(area, 'areasToExplore', idx)
             )}
             {customWeaker.map((rec, idx) => renderCustomRecommendation(rec, idx))}
           </ul>
-          {renderAddCustomButton('weakerAreas')}
+          {renderAddCustomButton('areasToExplore')}
         </div>
       </div>
     );

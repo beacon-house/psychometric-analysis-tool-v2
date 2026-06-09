@@ -161,7 +161,7 @@ export interface SelectedRecommendation {
   id: string;
   student_id: string;
   domain: string;
-  section: 'strongerAreas' | 'weakerAreas';
+  section: 'strongerAreas' | 'weakerAreas' | 'areasToExplore';
   recommendation_text: string;
   is_custom: boolean;
   selected_by: string | null;
