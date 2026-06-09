@@ -282,19 +282,32 @@ function createTestDataSummary(formattedData: FormattedTestData): string {
   const { test16Personalities, testHigh5, testBigFive, testRiasec } =
     formattedData;
 
+  const dimensionDisplayNames: Record<string, string> = {
+    'Extraversion': 'Energy Orientation',
+    'Sensing': 'Information Style',
+    'Thinking': 'Decision Style',
+    'Judging': 'Structure Preference',
+    'Assertive': 'Self-Regulation Style',
+  };
+
   let summary = "## Student Test Results\n\n";
 
   if (test16Personalities) {
     summary += `### 16 Personalities Test\n`;
     summary += `- Personality Type: ${test16Personalities.personalityType?.fourLetterCode} (${test16Personalities.personalityType?.fullCode})\n`;
-    summary += `- Dimension Results (showing the student's preference and raw score on each dimension):\n`;
+    summary += `- Dimension Results (all scores show strength in the preferred trait, always 50%+):\n`;
     const dims = test16Personalities.dimensionScores;
     if (dims) {
-      summary += `  - Extraversion/Introversion dimension: Score ${dims.Extraversion?.normalized}% → Preference: ${dims.Extraversion?.preference}\n`;
-      summary += `  - Sensing/Intuition dimension: Score ${dims.Sensing?.normalized}% → Preference: ${dims.Sensing?.preference}\n`;
-      summary += `  - Thinking/Feeling dimension: Score ${dims.Thinking?.normalized}% → Preference: ${dims.Thinking?.preference}\n`;
-      summary += `  - Judging/Perceiving dimension: Score ${dims.Judging?.normalized}% → Preference: ${dims.Judging?.preference}\n`;
-      summary += `  - Assertive/Turbulent dimension: Score ${dims.Assertive?.normalized}% → Preference: ${dims.Assertive?.preference}\n\n`;
+      const dimKeys = ['Extraversion', 'Sensing', 'Thinking', 'Judging', 'Assertive'];
+      dimKeys.forEach((key) => {
+        const dimData = (dims as any)[key];
+        if (dimData) {
+          const displayScore = dimData.normalized >= 50 ? dimData.normalized : 100 - dimData.normalized;
+          const displayName = dimensionDisplayNames[key] || key;
+          summary += `  - ${displayName}: Score ${displayScore}% → Preference: ${dimData.preference}\n`;
+        }
+      });
+      summary += '\n';
     }
   }
 
@@ -390,9 +403,13 @@ Provide a CONCISE summary with exactly these sections:
 
 1. **What This Test Measures**: 2-3 sentences maximum explaining the five dimensions.
 
-2. **Results Table**: Present results in this exact 3-column format:
-   | Preference | Score | Interpretation |
-   CRITICAL: Use the student's actual preference (e.g., "Introverted", "Intuitive", "Thinking", "Perceiving", "Turbulent") as the row label, NOT the dimension name (e.g., "Extraversion", "Sensing"). The score is the raw percentage. The interpretation should contextualize both the preference and the score strength (e.g., a 43% score means moderate introversion, not extreme).
+2. **Results Table**: Present results in this exact 4-column format:
+   | Dimension | Preference | Score | Interpretation |
+   CRITICAL:
+   - Dimension column: Use descriptive dimension names (Energy Orientation, Information Style, Decision Style, Structure Preference, Self-Regulation Style)
+   - Preference column: The student's actual preference (e.g., "Extraverted", "Intuitive", "Feeling", "Judging", "Turbulent")
+   - Score column: ALWAYS 50% or higher. This represents the strength of the preference, NOT the raw dimension score. If the raw dimension score is below 50%, the student prefers the opposite trait, so display (100 - raw_score)% to show the strength of their actual preference.
+   - Interpretation column: Contextualize both the preference and the score strength (e.g., "Moderate extraversion at 57%; enjoys social interaction but may need time alone")
 
 3. **What This Means For You**: ONE paragraph only (4-5 sentences maximum) explaining how this personality type shows up.
    - NO cross-referencing to other tests
@@ -407,7 +424,7 @@ Format your response as structured JSON with this schema:
   "results": {
     "personalityType": "Type code (e.g., INFJ-T)",
     "dimensions": [
-      {"preference": "Introverted", "score": "46%", "interpretation": "Moderate introversion; comfortable in solitude but can engage socially when needed"}
+      {"dimension": "Energy Orientation", "preference": "Extraverted", "score": "57%", "interpretation": "Moderate extraversion; enjoys social interaction but may need time alone"}
     ]
   },
   "insights": "Single paragraph in third person (4-5 sentences max) about what this means for the student"

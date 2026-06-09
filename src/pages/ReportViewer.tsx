@@ -288,6 +288,7 @@ export const ReportViewer: React.FC = () => {
             <table className="results-table">
               <thead>
                 <tr>
+                  <th>Dimension</th>
                   <th>Preference</th>
                   <th>Score</th>
                   <th>Interpretation</th>
@@ -296,7 +297,8 @@ export const ReportViewer: React.FC = () => {
               <tbody>
                 {content.results.dimensions.map((dim: any, idx: number) => (
                   <tr key={idx}>
-                    <td>{dim.preference || dim.name}</td>
+                    <td>{dim.dimension || dim.name || dim.preference}</td>
+                    <td>{dim.preference}</td>
                     <td>{dim.score}</td>
                     <td>{dim.interpretation || dim.preference}</td>
                   </tr>
